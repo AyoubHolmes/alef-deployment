@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Art Exhibitions Model
+model ArtExhibition {
+  id          Int      @id @default(autoincrement())
+  titleAr     String
+  titleFr     String
+  artistAr    String
+  artistFr    String
+  datesAr     String
+  datesFr     String
+  locationAr  String
+  locationFr  String
+  descriptionAr String @db.Text
+  descriptionFr String @db.Text
+  image       String?
+  status      ExhibitionStatus @default(UPCOMING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("art_exhibitions")
+}
+
+enum ExhibitionStatus {
+  CURRENT
+  UPCOMING
+  PAST
+}
+
+// Articles Model (for education, literary-thought, visual-arts)
+model Article {
+  id              Int      @id @default(autoincrement())
+  titleAr         String
+  titleFr         String
+  authorAr        String
+  authorFr        String
+  translatorAr    String?
+  translatorFr    String?
+  date            DateTime
+  category        ArticleCategory
+  categoryLabelAr String
+  categoryLabelFr String
+  image           String
+  excerptAr       String   @db.Text
+  excerptFr       String   @db.Text
+  contentAr       String   @db.Text
+  contentFr       String   @db.Text
+  additionalImages String[]
+  published       Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("articles")
+}
+
+enum ArticleCategory {
+  VISUAL_ARTS
+  LITERARY_THOUGHT
+  PROEMES
+  EDUCATION
+}
+
+// Educational Activities Models
+model WorkshopCategory {
+  id            Int       @id @default(autoincrement())
+  titleAr       String
+  titleFr       String
+  icon          String
+  descriptionAr String    @db.Text
+  descriptionFr String    @db.Text
+  workshops     Workshop[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("workshop_categories")
+}
+
+model Workshop {
+  id             Int              @id @default(autoincrement())
+  titleAr        String
+  titleFr        String
+  dateAr         String
+  dateFr         String
+  time           String
+  locationAr     String
+  locationFr     String
+  instructorAr   String
+  instructorFr   String
+  price          String
+  status         WorkshopStatus   @default(OPEN)
+  categoryId     Int
+  category       WorkshopCategory @relation(fields: [categoryId], references: [id])
+  examplesAr     String[]
+  examplesFr     String[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@map("workshops")
+}
+
+enum WorkshopStatus {
+  OPEN
+  ALMOST_FULL
+  FULL
+  COMPLETED
+}
+
+// Literary Gatherings Model
+model LiteraryEvent {
+  id            Int         @id @default(autoincrement())
+  titleAr       String
+  titleFr       String
+  dateAr        String
+  dateFr        String
+  locationAr    String
+  locationFr    String
+  descriptionAr String      @db.Text
+  descriptionFr String      @db.Text
+  image         String
+  status        EventStatus @default(UPCOMING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("literary_events")
+}
+
+enum EventStatus {
+  UPCOMING
+  PAST
+  CANCELLED
+}

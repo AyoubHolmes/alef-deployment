@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 209 92% 29%; /* Deep Blue #074D8C */
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 39 70% 82%; /* Warm Sand */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 24 98% 49%; /* Bright Orange #F75C03 */
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 209 92% 29%; /* Deep Blue #074D8C */
+
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Direction-specific styles */
+  html[dir="rtl"] .rtl-flip {
+    transform: scaleX(-1);
+  }
+
+  /* Typography */
+  html[lang="ar"] {
+    font-family: 'Cairo', sans-serif;
+  }
+
+  html[lang="fr"] {
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  /* Button styles */
+  .btn-alef {
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 font-medium bg-primary text-primary-foreground hover:bg-accent transition-colors duration-300 shadow-md;
+  }
+
+  /* Section animation */
+  .section-fade-in {
+    @apply animate-fade-in;
+  }
+}
+
+/* Carousel */
+.carousel-slide {
+  transition: transform 0.4s ease-in-out;
+}

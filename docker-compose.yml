@@ -1,0 +1,15 @@
+services:
+  postgres-db:
+    image: postgres:latest
+    ports:
+      - '${ALEF_DB_PORT:-5432}:5432'
+    environment:
+      POSTGRES_USER: ${ALEF_DB_USER}
+      POSTGRES_PASSWORD: ${ALEF_DB_PASSWORD}
+      POSTGRES_DB: ${ALEF_DB_NAME}
+    volumes:
+      - alef-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  alef-data:
