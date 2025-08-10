@@ -221,7 +221,7 @@ const AdminOeilAlefLiteraryThought: React.FC = () => {
                     <Label>{language === 'ar' ? 'المترجم (عربي) - اختياري' : 'Traducteur (Arabe) - Optionnel'}</Label>
                     <Input
                       value={formData.translator?.ar || ''}
-                      onChange={(e) => setFormData({...formData, translator: {...formData.translator, ar: e.target.value}})}
+                      onChange={(e) => setFormData({...formData, translator: {...formData.translator, ar: e.target.value, fr: formData.translator?.fr || ''}})}
                       className={language === 'ar' ? 'text-right font-cairo' : 'font-montserrat'}
                     />
                   </div>
@@ -229,7 +229,7 @@ const AdminOeilAlefLiteraryThought: React.FC = () => {
                     <Label>{language === 'ar' ? 'المترجم (فرنسي) - اختياري' : 'Traducteur (Français) - Optionnel'}</Label>
                     <Input
                       value={formData.translator?.fr || ''}
-                      onChange={(e) => setFormData({...formData, translator: {...formData.translator, fr: e.target.value}})}
+                      onChange={(e) => setFormData({...formData, translator: {...formData.translator, fr: e.target.value, ar: formData.translator?.ar || ''}})}
                     />
                   </div>
                 </div>

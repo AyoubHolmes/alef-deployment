@@ -14,7 +14,7 @@ const OeilAlefArticleDetail = () => {
   const router = useRouter();
   const { language } = useLanguage();
 
-  const article = oeilDAlefArticles.find(a => a.id === parseInt(id || ''));
+  const article = oeilDAlefArticles.find(a => a.id === parseInt(Array.isArray(id) ? id[0] : id || ''));
 
   if (!article) {
     return (
@@ -23,7 +23,7 @@ const OeilAlefArticleDetail = () => {
           <h1 className="text-2xl font-bold mb-4">
             {language === 'ar' ? 'المقال غير موجود' : 'Article non trouvé'}
           </h1>
-          <Button onClick={() => router.push(-1)}>
+          <Button onClick={() => router.back()}>
             {language === 'ar' ? 'العودة' : 'Retour'}
           </Button>
         </div>
@@ -37,7 +37,7 @@ const OeilAlefArticleDetail = () => {
 
   const getCategoryPath = () => {
     // Navigate back to the category page that shows the article list
-    const currentPath = window.pathname;
+    const currentPath = window.location.pathname;
     const pathParts = currentPath.split('/');
     // Remove '/article/{id}' from the end to get back to the category list
     return pathParts.slice(0, -2).join('/');

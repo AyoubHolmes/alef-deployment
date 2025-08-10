@@ -37,11 +37,11 @@ const Articles = () => {
     }
   ];
 
-  const handleDownload = (articleId) => {
+  const handleDownload = (articleId: number) => {
     console.log(`Downloading article ${articleId}`);
   };
 
-  const handleReadArticle = (articleId) => {
+  const handleReadArticle = (articleId: number) => {
     router.push(`/publications/articles/${articleId}`);
   };
 

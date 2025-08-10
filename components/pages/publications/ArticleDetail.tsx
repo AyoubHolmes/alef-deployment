@@ -100,7 +100,7 @@ Cette évolution ouvre de nouveaux horizons aux créateurs arabes pour atteindre
     }
   ];
 
-  const article = articles.find(a => a.id === parseInt(id || ''));
+  const article = articles.find(a => a.id === parseInt(Array.isArray(id) ? id[0] : id || '0'));
 
   if (!article) {
     return (

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import React, { useState } from 'react';
@@ -11,7 +12,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 const ArtChiv = () => {
   const { language } = useLanguage();
   const router = useRouter();
-  const [selectedIssue, setSelectedIssue] = useState(null);
+  const [selectedIssue, setSelectedIssue] = useState<any>(null);
 
   const issues = [
     {
@@ -42,11 +43,11 @@ const ArtChiv = () => {
     }
   ];
 
-  const handleDownload = (issueId) => {
+  const handleDownload = (issueId: number) => {
     console.log(`Downloading magazine issue ${issueId}`);
   };
 
-  const openIssueDetails = (issue) => {
+  const openIssueDetails = (issue: any) => {
     setSelectedIssue(issue);
   };
 
@@ -133,14 +134,14 @@ const ArtChiv = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h2 className={`text-2xl font-bold mb-2 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {selectedIssue.title}
+                      {selectedIssue?.title}
                     </h2>
                     <div className="flex items-center text-gray-600">
                       <span className="font-semibold">
-                        {language === 'ar' ? `العدد ${selectedIssue.number}` : `Numéro ${selectedIssue.number}`}
+                        {language === 'ar' ? `العدد ${selectedIssue?.number}` : `Numéro ${selectedIssue?.number}`}
                       </span>
                       <span className="mx-2">•</span>
-                      <span>{selectedIssue.date}</span>
+                      <span>{selectedIssue?.date}</span>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={closeIssueDetails}>
@@ -152,8 +153,8 @@ const ArtChiv = () => {
                   <div className="w-full max-w-sm mx-auto">
                     <AspectRatio ratio={3/4}>
                       <img 
-                        src={selectedIssue.image} 
-                        alt={selectedIssue.title}
+                        src={selectedIssue?.image} 
+                        alt={selectedIssue?.title}
                         className="w-full h-full object-cover rounded-lg shadow-lg"
                       />
                     </AspectRatio>
@@ -163,7 +164,7 @@ const ArtChiv = () => {
                       {language === 'ar' ? 'في هذا العدد' : 'Dans ce numéro'}
                     </h3>
                     <p className="text-gray-700 leading-relaxed">
-                      {selectedIssue.content}
+                      {selectedIssue?.content}
                     </p>
                   </div>
                 </div>
@@ -171,7 +172,7 @@ const ArtChiv = () => {
                 <div className="flex gap-3">
                   <Button 
                     className="flex-1 bg-[#F7A520] hover:bg-[#e6941c]"
-                    onClick={() => handleDownload(selectedIssue.id)}
+                    onClick={() => handleDownload(selectedIssue?.id)}
                   >
                     <Download className="mr-2 h-4 w-4" />
                     {language === 'ar' ? 'تحميل العدد' : 'Télécharger le numéro'}

@@ -232,8 +232,8 @@ const AdminOeilAlefVisualArts: React.FC = () => {
                       {language === 'ar' ? 'المترجم (عربي) - اختياري' : 'Traducteur (Arabe) - Optionnel'}
                     </Label>
                     <Input
-                      value={formData.translator?.ar || ''}
-                      onChange={(e) => setFormData({...formData, translator: {...formData.translator, ar: e.target.value}})}
+                      value={formData.translator?.ar ?? ''}
+                      onChange={(e) => setFormData({...formData, translator: {ar: e.target.value, fr: formData.translator?.fr ?? ''}})}
                       className={language === 'ar' ? 'text-right font-cairo' : 'font-montserrat'}
                     />
                   </div>
@@ -242,8 +242,8 @@ const AdminOeilAlefVisualArts: React.FC = () => {
                       {language === 'ar' ? 'المترجم (فرنسي) - اختياري' : 'Traducteur (Français) - Optionnel'}
                     </Label>
                     <Input
-                      value={formData.translator?.fr || ''}
-                      onChange={(e) => setFormData({...formData, translator: {...formData.translator, fr: e.target.value}})}
+                      value={formData.translator?.fr ?? ''}
+                      onChange={(e) => setFormData({...formData, translator: {ar: formData.translator?.ar ?? '', fr: e.target.value}})}
                       className="font-montserrat"
                     />
                   </div>

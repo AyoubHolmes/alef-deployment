@@ -11,7 +11,17 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 const BiaisArtistiques = () => {
   const { language } = useLanguage();
   const router = useRouter();
-  const [selectedIssue, setSelectedIssue] = useState(null);
+  type Issue = {
+    id: number;
+    number: number;
+    title: string;
+    date: string;
+    image: string;
+    featured: string;
+    content: string;
+  } | null;
+
+  const [selectedIssue, setSelectedIssue] = useState<Issue>(null);
 
   const issues = [
     {
@@ -42,11 +52,11 @@ const BiaisArtistiques = () => {
     }
   ];
 
-  const handleDownload = (issueId) => {
+  const handleDownload = (issueId: number) => {
     console.log(`Downloading magazine issue ${issueId}`);
   };
 
-  const openIssueDetails = (issue) => {
+  const openIssueDetails = (issue: NonNullable<Issue>) => {
     setSelectedIssue(issue);
   };
 

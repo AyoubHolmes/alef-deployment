@@ -12,7 +12,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 const AmisDionysos = () => {
   const { language } = useLanguage();
   const router = useRouter();
-  const [selectedIssue, setSelectedIssue] = useState(null);
+  const [selectedIssue, setSelectedIssue] = useState<any>(null);
 
   const issues = [
     {
@@ -43,11 +43,11 @@ const AmisDionysos = () => {
     }
   ];
 
-  const handleDownload = (issueId) => {
+  const handleDownload = (issueId: number) => {
     console.log(`Downloading magazine issue ${issueId}`);
   };
 
-  const openIssueDetails = (issue) => {
+  const openIssueDetails = (issue: any) => {
     setSelectedIssue(issue);
   };
 
@@ -134,14 +134,14 @@ const AmisDionysos = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h2 className={`text-2xl font-bold mb-2 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {selectedIssue.title}
+                      {selectedIssue?.title}
                     </h2>
                     <div className="flex items-center text-gray-600">
                       <span className="font-semibold">
-                        {language === 'ar' ? `العدد ${selectedIssue.number}` : `Numéro ${selectedIssue.number}`}
+                        {language === 'ar' ? `العدد ${selectedIssue?.number}` : `Numéro ${selectedIssue?.number}`}
                       </span>
                       <span className="mx-2">•</span>
-                      <span>{selectedIssue.date}</span>
+                      <span>{selectedIssue?.date}</span>
                     </div>
                   </div>
                   <Button variant="ghost" size="sm" onClick={closeIssueDetails}>

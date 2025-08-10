@@ -292,7 +292,7 @@ const EventDetail = () => {
   const findEvent = () => {
     const categoryKey = category as keyof typeof allEvents;
     const events = allEvents[categoryKey];
-    return events?.find(event => event.id === parseInt(id || '0'));
+    return events?.find(event => event.id === parseInt(Array.isArray(id) ? id[0] : id || '0'));
   };
 
   const event = findEvent();
