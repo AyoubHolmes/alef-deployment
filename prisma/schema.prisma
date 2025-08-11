@@ -236,3 +236,25 @@ model CollaborativeProgram {
 
   @@map("collaborative_programs")
 }
+
+// Books Model
+model Book {
+  id            Int      @id @default(autoincrement())
+  titleAr       String
+  titleFr       String
+  authorAr      String
+  authorFr      String
+  year          String
+  pages         Int
+  isbn          String   @unique
+  image         String?
+  descriptionAr String   @db.Text
+  descriptionFr String   @db.Text
+  summaryAr     String   @db.Text
+  summaryFr     String   @db.Text
+  downloadUrl   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("books")
+}

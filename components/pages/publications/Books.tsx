@@ -1,7 +1,7 @@
 
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useLanguage } from '@/contexts/language';
 import { Button } from "@/components/ui/button";
@@ -13,53 +13,47 @@ const Books = () => {
   const { language } = useLanguage();
   const router = useRouter();
   const [selectedBook, setSelectedBook] = useState(null);
+  const [books, setBooks] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const books = [
-    {
-      id: 1,
-      title: {
-        ar: 'تاريخ الثقافة المغربية',
-        fr: 'Histoire de la culture marocaine'
-      },
-      author: {
-        ar: 'د. محمد الأندلسي',
-        fr: 'Dr. Mohammed Andalusi'
-      },
-      year: '2023',
-      pages: 320,
-      isbn: '978-9981-123-456-7',
-      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop',
-      description: language === 'ar' 
-        ? 'دراسة شاملة لتطور الثقافة المغربية عبر العصور، تتناول الجوانب الأدبية والفنية والاجتماعية'
-        : 'Étude complète de l\'évolution de la culture marocaine à travers les âges, couvrant les aspects littéraires, artistiques et sociaux',
-      summary: language === 'ar'
-        ? 'يقدم هذا الكتاب نظرة معمقة على التراث الثقافي المغربي من خلال تحليل النصوص التاريخية والشواهد الأثرية. يستكشف المؤلف كيف تشكلت الهوية الثقافية المغربية عبر التفاعل مع الحضارات المختلفة.'
-        : 'Ce livre offre un regard approfondi sur le patrimoine culturel marocain à travers l\'analyse de textes historiques et de témoignages archéologiques. L\'auteur explore comment l\'identité culturelle marocaine s\'est formée par l\'interaction avec différentes civilisations.',
-      downloadUrl: '/sample-book-1.pdf'
-    },
-    {
-      id: 2,
-      title: {
-        ar: 'الشعر المغربي الحديث',
-        fr: 'Poésie marocaine moderne'
-      },
-      author: {
-        ar: 'أمينة الكتاني',
-        fr: 'Amina Kettani'
-      },
-      year: '2023',
-      pages: 280,
-      isbn: '978-9981-123-457-4',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
-      description: language === 'ar' 
-        ? 'مختارات من أجمل القصائد المغربية المعاصرة مع دراسة نقدية معمقة'
-        : 'Anthologie des plus beaux poèmes marocains contemporains avec une étude critique approfondie',
-      summary: language === 'ar'
-        ? 'مجموعة منتقاة من أروع الأعمال الشعرية المغربية الحديثة، تضم قصائد لأبرز الشعراء المعاصرين مع تحليل أدبي ونقدي يسلط الضوء على خصائص الشعر المغربي الحديث.'
-        : 'Collection soigneusement sélectionnée des plus belles œuvres poétiques marocaines modernes, comprenant des poèmes des poètes contemporains les plus éminents avec une analyse littéraire et critique mettant en lumière les caractéristiques de la poésie marocaine moderne.',
-      downloadUrl: '/sample-book-2.pdf'
+  useEffect(() => {
+    async function loadBooks() {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/publications/books', { cache: 'no-store' });
+        const json = await res.json();
+        if (json?.success) {
+          const normalized = (json.data || []).map((book: any) => ({
+            id: book.id,
+            title: {
+              ar: book.titleAr,
+              fr: book.titleFr
+            },
+            author: {
+              ar: book.authorAr,
+              fr: book.authorFr
+            },
+            year: book.year,
+            pages: book.pages,
+            isbn: book.isbn,
+            image: book.image,
+            description: language === 'ar' ? book.descriptionAr : book.descriptionFr,
+            summary: language === 'ar' ? book.summaryAr : book.summaryFr,
+            downloadUrl: book.downloadUrl
+          }));
+          setBooks(normalized);
+        } else {
+          setError(language === 'ar' ? 'فشل في جلب الكتب' : 'Échec du chargement des livres');
+        }
+      } catch (e) {
+        setError(language === 'ar' ? 'حدث خطأ في الاتصال' : 'Erreur de connexion');
+      } finally {
+        setLoading(false);
+      }
     }
-  ];
+    loadBooks();
+  }, [language]);
 
   const openBookDetails = (book) => {
     setSelectedBook(book);
@@ -93,6 +87,12 @@ const Books = () => {
           </p>
         </div>
 
+        {loading && (
+          <div className="py-12 text-center">{language === 'ar' ? 'جاري التحميل...' : 'Chargement...'}</div>
+        )}
+        {error && !loading && (
+          <div className="py-12 text-center text-red-600">{error}</div>
+        )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {books.map((book) => (
             <div key={book.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">

@@ -489,6 +489,63 @@ async function main() {
     console.log('✅ Seeded one PROEMES article');
   }
 
+  // Seed Books
+  const books = await Promise.all([
+    prisma.book.create({
+      data: {
+        titleAr: 'تاريخ الثقافة المغربية',
+        titleFr: 'Histoire de la culture marocaine',
+        authorAr: 'د. محمد الأندلسي',
+        authorFr: 'Dr. Mohammed Andalusi',
+        year: '2023',
+        pages: 320,
+        isbn: '978-9981-123-456-7',
+        image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop',
+        descriptionAr: 'دراسة شاملة لتطور الثقافة المغربية عبر العصور، تتناول الجوانب الأدبية والفنية والاجتماعية',
+        descriptionFr: "Étude complète de l'évolution de la culture marocaine à travers les âges, couvrant les aspects littéraires, artistiques et sociaux",
+        summaryAr: 'يقدم هذا الكتاب نظرة معمقة على التراث الثقافي المغربي من خلال تحليل النصوص التاريخية والشواهد الأثرية. يستكشف المؤلف كيف تشكلت الهوية الثقافية المغربية عبر التفاعل مع الحضارات المختلفة.',
+        summaryFr: "Ce livre offre un regard approfondi sur le patrimoine culturel marocain à travers l'analyse de textes historiques et de témoignages archéologiques. L'auteur explore comment l'identité culturelle marocaine s'est formée par l'interaction avec différentes civilisations.",
+        downloadUrl: '/sample-book-1.pdf'
+      }
+    }),
+    prisma.book.create({
+      data: {
+        titleAr: 'الشعر المغربي الحديث',
+        titleFr: 'Poésie marocaine moderne',
+        authorAr: 'أمينة الكتاني',
+        authorFr: 'Amina Kettani',
+        year: '2023',
+        pages: 280,
+        isbn: '978-9981-123-457-4',
+        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
+        descriptionAr: 'مختارات من أجمل القصائد المغربية المعاصرة مع دراسة نقدية معمقة',
+        descriptionFr: 'Anthologie des plus beaux poèmes marocains contemporains avec une étude critique approfondie',
+        summaryAr: 'مجموعة منتقاة من أروع الأعمال الشعرية المغربية الحديثة، تضم قصائد لأبرز الشعراء المعاصرين مع تحليل أدبي ونقدي يسلط الضوء على خصائص الشعر المغربي الحديث.',
+        summaryFr: 'Collection soigneusement sélectionnée des plus belles œuvres poétiques marocaines modernes, comprenant des poèmes des poètes contemporains les plus éminents avec une analyse littéraire et critique mettant en lumière les caractéristiques de la poésie marocaine moderne.',
+        downloadUrl: '/sample-book-2.pdf'
+      }
+    }),
+    prisma.book.create({
+      data: {
+        titleAr: 'فن الخط العربي في المغرب',
+        titleFr: 'Art de la calligraphie arabe au Maroc',
+        authorAr: 'د. فاطمة المراكشي',
+        authorFr: 'Dr. Fatima Marrakchi',
+        year: '2022',
+        pages: 450,
+        isbn: '978-9981-123-458-1',
+        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
+        descriptionAr: 'دراسة معمقة لتطور فن الخط العربي في المغرب من العصر الوسيط إلى الوقت الحاضر',
+        descriptionFr: "Étude approfondie de l'évolution de l'art de la calligraphie arabe au Maroc du Moyen Âge à nos jours",
+        summaryAr: 'يتتبع هذا الكتاب تاريخ فن الخط العربي في المغرب، ويحلل الطرق والأساليب المختلفة التي طورها الخطاطون المغاربة عبر القرون. يضم الكتاب صورًا نادرة لمخطوطات تاريخية ونماذج من أعمال خطاطين معاصرين.',
+        summaryFr: "Ce livre retrace l'histoire de l'art de la calligraphie arabe au Maroc et analyse les différentes méthodes et styles développés par les calligraphes marocains à travers les siècles. Il comprend des images rares de manuscrits historiques et des exemples d'œuvres de calligraphes contemporains.",
+        downloadUrl: '/sample-book-3.pdf'
+      }
+    })
+  ]);
+
+  console.log(`✅ Created ${books.length} books`);
+
   console.log('🎉 Database seeding completed successfully!');
 }
 
