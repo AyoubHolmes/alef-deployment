@@ -23,9 +23,11 @@ const About = () => {
   const [aboutContent, setAboutContent] = useState<AboutContent | null>(null);
   
   useEffect(() => {
-    const savedContent = localStorage.getItem('aboutContent');
-    if (savedContent) {
-      setAboutContent(JSON.parse(savedContent));
+    if (typeof window !== 'undefined') {
+      const savedContent = localStorage.getItem('aboutContent');
+      if (savedContent) {
+        setAboutContent(JSON.parse(savedContent));
+      }
     }
   }, []);
 

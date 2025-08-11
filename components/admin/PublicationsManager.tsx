@@ -1,7 +1,7 @@
 
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language';
@@ -31,10 +31,14 @@ interface Publication {
 
 const PublicationsManager: React.FC = () => {
   const { language, setLanguage } = useLanguage();
-  const [publications, setPublications] = useState<Publication[]>(() => {
-    const saved = localStorage.getItem('publications');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [publications, setPublications] = useState<Publication[]>([]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('publications');
+      setPublications(saved ? JSON.parse(saved) : []);
+    }
+  }, []);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingPublication, setEditingPublication] = useState<Publication | null>(null);
   const [formData, setFormData] = useState({

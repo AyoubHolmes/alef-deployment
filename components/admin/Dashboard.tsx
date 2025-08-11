@@ -113,6 +113,8 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     const calculateStats = () => {
+      if (typeof window === 'undefined') return;
+      
       // Publications stats
       const publications = JSON.parse(localStorage.getItem('publications') || '[]');
       const articles = publications.filter((p: any) => p.type === 'article').length;

@@ -1,3 +1,4 @@
+'use client'
 
 import { useState, useEffect } from 'react';
 import { EditableContent } from '@/types/ContentTypes';
@@ -8,14 +9,17 @@ export const useContentManager = () => {
   const [content, setContent] = useState<EditableContent[]>([]);
 
   useEffect(() => {
-    const savedContent = localStorage.getItem(CONTENT_STORAGE_KEY);
-    if (savedContent) {
-      setContent(JSON.parse(savedContent));
-    } else {
-      // Initialize with default content structure
-      const defaultContent = initializeDefaultContent();
-      setContent(defaultContent);
-      localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(defaultContent));
+    // Check if we're on the client side
+    if (typeof window !== 'undefined') {
+      const savedContent = localStorage.getItem(CONTENT_STORAGE_KEY);
+      if (savedContent) {
+        setContent(JSON.parse(savedContent));
+      } else {
+        // Initialize with default content structure
+        const defaultContent = initializeDefaultContent();
+        setContent(defaultContent);
+        localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(defaultContent));
+      }
     }
   }, []);
 
@@ -24,19 +28,25 @@ export const useContentManager = () => {
       item.id === id ? { ...item, value: newValue } : item
     );
     setContent(updatedContent);
-    localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(updatedContent));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(updatedContent));
+    }
   };
 
   const addContent = (newContent: EditableContent) => {
     const updatedContent = [...content, newContent];
     setContent(updatedContent);
-    localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(updatedContent));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(updatedContent));
+    }
   };
 
   const deleteContent = (id: string) => {
     const updatedContent = content.filter(item => item.id !== id);
     setContent(updatedContent);
-    localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(updatedContent));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(CONTENT_STORAGE_KEY, JSON.stringify(updatedContent));
+    }
   };
 
   const getContentByPage = (page: string) => {

@@ -15,12 +15,14 @@ const Publications = () => {
   const router = useRouter();
 
   // Get publications from localStorage (managed by admin)
-  const getPublications = () => {
-    const saved = localStorage.getItem('publications');
-    return saved ? JSON.parse(saved) : [];
-  };
+  const [publications, setPublications] = React.useState<any[]>([]);
 
-  const publications = getPublications();
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('publications');
+      setPublications(saved ? JSON.parse(saved) : []);
+    }
+  }, []);
 
   const publicationTypes = [
     {

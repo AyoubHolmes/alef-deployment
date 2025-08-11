@@ -34,9 +34,11 @@ const Contact = () => {
   
   // Load admin content
   useEffect(() => {
-    const savedContent = localStorage.getItem('contactContent');
-    if (savedContent) {
-      setAdminContent(JSON.parse(savedContent));
+    if (typeof window !== 'undefined') {
+      const savedContent = localStorage.getItem('contactContent');
+      if (savedContent) {
+        setAdminContent(JSON.parse(savedContent));
+      }
     }
   }, []);
 
