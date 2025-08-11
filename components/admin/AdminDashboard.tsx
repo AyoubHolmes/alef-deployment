@@ -1,5 +1,6 @@
-import React from 'react';
-import { useLanguage } from '@/contexts/language';
+'use client'
+
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Calendar, 
@@ -46,52 +47,131 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, trend, la
 };
 
 const AdminDashboard: React.FC = () => {
-  const { language } = useLanguage();
-
-  const stats = [
+  const language = 'ar';
+  const [stats, setStats] = useState([
     {
       title: language === 'ar' ? 'إجمالي الأنشطة' : 'Total des Activités',
-      value: 24,
+      value: 0,
       icon: Calendar,
-      trend: language === 'ar' ? '+20% من الشهر الماضي' : '+20% du mois dernier'
+      trend: language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...'
     },
     {
       title: language === 'ar' ? 'المنشورات' : 'Publications',
-      value: 156,
+      value: 0,
       icon: BookOpen,
-      trend: language === 'ar' ? '+15 هذا الأسبوع' : '+15 cette semaine'
+      trend: language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...'
     },
     {
-      title: language === 'ar' ? 'الأعضاء' : 'Membres',
-      value: 89,
+      title: language === 'ar' ? 'الشركاء' : 'Partenaires',
+      value: 0,
       icon: Users,
-      trend: language === 'ar' ? '+5 أعضاء جدد' : '+5 nouveaux membres'
+      trend: language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...'
     },
     {
-      title: language === 'ar' ? 'مقاطع الفيديو' : 'Vidéos',
-      value: 32,
-      icon: Video,
-      trend: language === 'ar' ? '+3 هذا الشهر' : '+3 ce mois'
+      title: language === 'ar' ? 'المقالات' : 'Articles',
+      value: 0,
+      icon: FileText,
+      trend: language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...'
     }
-  ];
+  ]);
 
-  const recentActivities = [
+  const [recentActivities, setRecentActivities] = useState([
     {
-      action: language === 'ar' ? 'تم إضافة نشاط جديد' : 'Nouvelle activité ajoutée',
-      item: language === 'ar' ? 'ورشة الفنون البصرية' : 'Atelier Arts Visuels',
-      time: language === 'ar' ? 'منذ ساعتين' : 'Il y a 2 heures'
-    },
-    {
-      action: language === 'ar' ? 'تم نشر مقال جديد' : 'Nouvel article publié',
-      item: language === 'ar' ? 'الأدب المعاصر' : 'Littérature Contemporaine',
-      time: language === 'ar' ? 'منذ 4 ساعات' : 'Il y a 4 heures'
-    },
-    {
-      action: language === 'ar' ? 'تم تحديث معلومات عضو' : 'Informations membre mises à jour',
-      item: language === 'ar' ? 'أحمد محمد' : 'Ahmed Mohammed',
-      time: language === 'ar' ? 'منذ يوم واحد' : 'Il y a 1 jour'
+      action: language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...',
+      item: '',
+      time: ''
     }
-  ];
+  ]);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch activities
+      const activitiesResponse = await fetch('/api/activities');
+      const activitiesData = await activitiesResponse.json();
+      const activitiesCount = activitiesData.success ? activitiesData.data.length : 0;
+
+      // Fetch partners
+      const partnersResponse = await fetch('/api/partners');
+      const partnersData = await partnersResponse.json();
+      const partnersCount = partnersData.success ? (partnersData.data.partners?.length || 0) : 0;
+
+      // Fetch books
+      const booksResponse = await fetch('/api/publications/books');
+      const booksData = await booksResponse.json();
+      const booksCount = booksData.success ? booksData.data.length : 0;
+
+      // Fetch articles
+      const articlesResponse = await fetch('/api/articles');
+      const articlesData = await articlesResponse.json();
+      const articlesCount = articlesData.success ? articlesData.data.length : 0;
+
+      setStats([
+        {
+          title: language === 'ar' ? 'إجمالي الأنشطة' : 'Total des Activités',
+          value: activitiesCount,
+          icon: Calendar,
+          trend: language === 'ar' ? `${activitiesCount} نشاط` : `${activitiesCount} activités`
+        },
+        {
+          title: language === 'ar' ? 'المنشورات' : 'Publications',
+          value: booksCount,
+          icon: BookOpen,
+          trend: language === 'ar' ? `${booksCount} كتاب` : `${booksCount} livres`
+        },
+        {
+          title: language === 'ar' ? 'الشركاء' : 'Partenaires',
+          value: partnersCount,
+          icon: Users,
+          trend: language === 'ar' ? `${partnersCount} شريك` : `${partnersCount} partenaires`
+        },
+        {
+          title: language === 'ar' ? 'المقالات' : 'Articles',
+          value: articlesCount,
+          icon: FileText,
+          trend: language === 'ar' ? `${articlesCount} مقال` : `${articlesCount} articles`
+        }
+      ]);
+
+      // Set recent activities based on real data
+      const recentActionsData = [];
+      if (activitiesData.success && activitiesData.data.length > 0) {
+        const latestActivity = activitiesData.data[0];
+        recentActionsData.push({
+          action: language === 'ar' ? 'تم إضافة نشاط جديد' : 'Nouvelle activité ajoutée',
+          item: language === 'ar' ? latestActivity.title.ar : latestActivity.title.fr,
+          time: language === 'ar' ? 'مؤخراً' : 'Récemment'
+        });
+      }
+      
+      if (partnersData.success && partnersData.data.partners?.length > 0) {
+        const latestPartner = partnersData.data.partners[0];
+        recentActionsData.push({
+          action: language === 'ar' ? 'تم إضافة شريك جديد' : 'Nouveau partenaire ajouté',
+          item: language === 'ar' ? latestPartner.nameAr : latestPartner.nameFr,
+          time: language === 'ar' ? 'مؤخراً' : 'Récemment'
+        });
+      }
+
+      if (articlesData.success && articlesData.data.length > 0) {
+        const latestArticle = articlesData.data[0];
+        recentActionsData.push({
+          action: language === 'ar' ? 'تم نشر مقال جديد' : 'Nouvel article publié',
+          item: language === 'ar' ? latestArticle.titleAr : latestArticle.titleFr,
+          time: language === 'ar' ? 'مؤخراً' : 'Récemment'
+        });
+      }
+
+      if (recentActionsData.length > 0) {
+        setRecentActivities(recentActionsData.slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
   return (
     <div className="space-y-6">

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 
 'use client'
 
@@ -12,7 +13,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 const Books = () => {
   const { language } = useLanguage();
   const router = useRouter();
-  const [selectedBook, setSelectedBook] = useState(null);
+  const [selectedBook, setSelectedBook] = useState<any>(null);
   const [books, setBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +56,7 @@ const Books = () => {
     loadBooks();
   }, [language]);
 
-  const openBookDetails = (book) => {
+  const openBookDetails = (book: any) => {
     setSelectedBook(book);
   };
 
@@ -149,7 +150,7 @@ const Books = () => {
                   <div className="w-full max-w-sm mx-auto">
                     <AspectRatio ratio={3/4}>
                       <img 
-                        src={selectedBook.image} 
+                        src={selectedBook.image as string} 
                         alt={selectedBook.title[language]}
                         className="w-full h-full object-cover rounded-lg shadow-lg"
                       />

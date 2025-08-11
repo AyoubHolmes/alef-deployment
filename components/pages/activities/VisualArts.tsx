@@ -74,7 +74,7 @@ const VisualArts = () => {
     translator: article.translatorAr && article.translatorFr 
       ? { ar: article.translatorAr, fr: article.translatorFr }
       : undefined,
-    date: article.date,
+    date: new Date(article.date).toISOString().split('T')[0],
     category: 'visual-arts' as const,
     categoryLabel: { ar: article.categoryLabelAr, fr: article.categoryLabelFr },
     image: article.image,

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/language';
@@ -20,54 +20,47 @@ interface BiaisArtistiquesArticle {
   status: { ar: string; fr: string };
   content: { ar: string; fr: string };
   excerpt: { ar: string; fr: string };
+  number?: number;
+  image?: string;
 }
 
 const AdminPublicationsBiaisArtistiques: React.FC = () => {
   const { language } = useLanguage();
-  const [articles, setArticles] = useState<BiaisArtistiquesArticle[]>([
-    {
-      id: 1,
-      title: { 
-        ar: 'مقال التحيزات الفنية الأول', 
-        fr: 'Premier Article Biais Artistiques' 
-      },
-      author: { 
-        ar: 'د. نادية الناقدة', 
-        fr: 'Dr. Nadia Nakida' 
-      },
-      date: '2024-01-15',
-      status: { ar: 'منشور', fr: 'Publié' },
-      content: { 
-        ar: 'هذا نص مقال التحيزات الفنية باللغة العربية...', 
-        fr: 'Ceci est le contenu de l\'article Biais Artistiques en français...' 
-      },
-      excerpt: { 
-        ar: 'مقتطف من مقال التحيزات الفنية...', 
-        fr: 'Extrait de l\'article Biais Artistiques...' 
+  const [articles, setArticles] = useState<BiaisArtistiquesArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBiaisArtistiquesIssues = async () => {
+    try {
+      const response = await fetch('/api/publication-issues?magazine=BIAIS_ARTISTIQUES');
+      const data = await response.json();
+      
+      if (data.success) {
+        const transformedArticles = data.data.map((issue: any) => ({
+          id: issue.id,
+          title: { ar: issue.titleAr, fr: issue.titleFr },
+          author: { ar: '', fr: '' }, // Add author fields to API if needed
+          date: issue.date.split('T')[0],
+          status: { ar: 'منشور', fr: 'Publié' },
+          content: { ar: issue.contentAr, fr: issue.contentFr },
+          excerpt: { ar: issue.featuredAr, fr: issue.featuredFr },
+          number: issue.number,
+          image: issue.image
+        }));
+        setArticles(transformedArticles);
+      } else {
+        toast.error(language === 'ar' ? 'فشل في تحميل البيانات' : 'Échec du chargement des données');
       }
-    },
-    {
-      id: 2,
-      title: { 
-        ar: 'مقال التحيزات الفنية الثاني', 
-        fr: 'Deuxième Article Biais Artistiques' 
-      },
-      author: { 
-        ar: 'أ. كريم المحلل', 
-        fr: 'Prof. Karim Mouhallil' 
-      },
-      date: '2024-01-10',
-      status: { ar: 'مسودة', fr: 'Brouillon' },
-      content: { 
-        ar: 'هذا نص المقال الثاني للتحيزات الفنية باللغة العربية...', 
-        fr: 'Ceci est le contenu du deuxième article Biais Artistiques en français...' 
-      },
-      excerpt: { 
-        ar: 'مقتطف من المقال الثاني للتحيزات الفنية...', 
-        fr: 'Extrait du deuxième article Biais Artistiques...' 
-      }
+    } catch (error) {
+      console.error('Error fetching Biais Artistiques issues:', error);
+      toast.error(language === 'ar' ? 'خطأ في تحميل البيانات' : 'Erreur lors du chargement');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchBiaisArtistiquesIssues();
+  }, []);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<BiaisArtistiquesArticle | null>(null);
@@ -77,7 +70,9 @@ const AdminPublicationsBiaisArtistiques: React.FC = () => {
     date: new Date().toISOString().split('T')[0],
     status: { ar: 'مسودة', fr: 'Brouillon' },
     content: { ar: '', fr: '' },
-    excerpt: { ar: '', fr: '' }
+    excerpt: { ar: '', fr: '' },
+    number: 1,
+    image: ''
   });
 
   const resetForm = () => {
@@ -87,7 +82,9 @@ const AdminPublicationsBiaisArtistiques: React.FC = () => {
       date: new Date().toISOString().split('T')[0],
       status: { ar: 'مسودة', fr: 'Brouillon' },
       content: { ar: '', fr: '' },
-      excerpt: { ar: '', fr: '' }
+      excerpt: { ar: '', fr: '' },
+      number: articles.length + 1,
+      image: ''
     });
     setEditingArticle(null);
   };
@@ -105,41 +102,100 @@ const AdminPublicationsBiaisArtistiques: React.FC = () => {
       date: article.date,
       status: article.status,
       content: article.content,
-      excerpt: article.excerpt
+      excerpt: article.excerpt,
+      number: article.number || 1,
+      image: article.image || ''
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setArticles(articles.filter(article => article.id !== id));
-    toast.success(language === 'ar' ? 'تم حذف المقال بنجاح' : 'Article supprimé avec succès');
+  const handleDelete = async (id: number) => {
+    if (!confirm(language === 'ar' ? 'هل تريد حذف هذا المقال؟' : 'Voulez-vous supprimer cet article?')) return;
+
+    try {
+      const response = await fetch('/api/publication-issues', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success(language === 'ar' ? 'تم حذف المقال بنجاح' : 'Article supprimé avec succès');
+        await fetchBiaisArtistiquesIssues();
+      } else {
+        toast.error(language === 'ar' ? 'خطأ في حذف المقال' : 'Erreur lors de la suppression');
+      }
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      toast.error(language === 'ar' ? 'خطأ في حذف المقال' : 'Erreur lors de la suppression');
+    }
   };
 
-  const handleSave = () => {
-    if (!formData.title.ar || !formData.title.fr || !formData.author.ar || !formData.author.fr) {
+  const handleSave = async () => {
+    if (!formData.title.ar || !formData.title.fr || !formData.content.ar || !formData.content.fr) {
       toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Veuillez remplir tous les champs requis');
       return;
     }
 
-    if (editingArticle) {
-      setArticles(articles.map(article => 
-        article.id === editingArticle.id 
-          ? { ...formData, id: editingArticle.id }
-          : article
-      ));
-      toast.success(language === 'ar' ? 'تم تحديث المقال بنجاح' : 'Article mis à jour avec succès');
-    } else {
-      const newArticle = {
-        ...formData,
-        id: Math.max(...articles.map(a => a.id)) + 1
+    try {
+      const apiData = {
+        magazine: 'BIAIS_ARTISTIQUES',
+        number: formData.number || articles.length + 1,
+        titleAr: formData.title.ar,
+        titleFr: formData.title.fr,
+        date: new Date(formData.date).toISOString(),
+        image: formData.image || '',
+        featuredAr: formData.excerpt.ar,
+        featuredFr: formData.excerpt.fr,
+        contentAr: formData.content.ar,
+        contentFr: formData.content.fr
       };
-      setArticles([...articles, newArticle]);
-      toast.success(language === 'ar' ? 'تم إضافة المقال بنجاح' : 'Article ajouté avec succès');
-    }
 
-    setIsDialogOpen(false);
-    resetForm();
+      let response;
+      if (editingArticle) {
+        response = await fetch('/api/publication-issues', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingArticle.id, ...apiData })
+        });
+      } else {
+        response = await fetch('/api/publication-issues', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(apiData)
+        });
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success(editingArticle 
+          ? (language === 'ar' ? 'تم تحديث المقال بنجاح' : 'Article mis à jour avec succès')
+          : (language === 'ar' ? 'تم إضافة المقال بنجاح' : 'Article ajouté avec succès')
+        );
+        await fetchBiaisArtistiquesIssues();
+        setIsDialogOpen(false);
+        resetForm();
+      } else {
+        toast.error(language === 'ar' ? 'خطأ في حفظ المقال' : 'Erreur lors de la sauvegarde');
+      }
+    } catch (error) {
+      console.error('Error saving article:', error);
+      toast.error(language === 'ar' ? 'خطأ في حفظ المقال' : 'Erreur lors de la sauvegarde');
+    }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">
+            {language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...'}
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -301,13 +357,18 @@ const AdminPublicationsBiaisArtistiques: React.FC = () => {
                 <div key={article.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <h3 className={`font-medium ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {article.title[language]}
+                      {language === 'ar' ? article.title.ar : article.title.fr}
+                      {article.number && (
+                        <span className="ml-2 text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                          {language === 'ar' ? `العدد ${article.number}` : `N° ${article.number}`}
+                        </span>
+                      )}
                     </h3>
                     <p className={`text-sm text-gray-500 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {article.author[language]} - {article.date} - {article.status[language]}
+                      {article.date} - {language === 'ar' ? article.status.ar : article.status.fr}
                     </p>
                     <p className={`text-sm text-gray-600 mt-1 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {article.excerpt[language]}
+                      {language === 'ar' ? article.excerpt.ar : article.excerpt.fr}
                     </p>
                   </div>
                   <div className="flex gap-2 ml-4">
@@ -320,6 +381,16 @@ const AdminPublicationsBiaisArtistiques: React.FC = () => {
                   </div>
                 </div>
               ))}
+              {articles.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-lg mb-2">
+                    {language === 'ar' ? 'لا توجد مقالات' : 'Aucun article'}
+                  </div>
+                  <div className="text-sm">
+                    {language === 'ar' ? 'ابدأ بإضافة مقال جديد' : 'Commencez par ajouter un nouvel article'}
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

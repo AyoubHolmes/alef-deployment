@@ -58,3 +58,52 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Failed to create book' }, { status: 500 });
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    const updated = await prisma.book.update({
+      where: { id: parseInt(id) },
+      data: {
+        titleAr: updateData.titleAr,
+        titleFr: updateData.titleFr,
+        authorAr: updateData.authorAr,
+        authorFr: updateData.authorFr,
+        year: updateData.year,
+        pages: updateData.pages,
+        isbn: updateData.isbn,
+        image: updateData.image,
+        descriptionAr: updateData.descriptionAr,
+        descriptionFr: updateData.descriptionFr,
+        summaryAr: updateData.summaryAr,
+        summaryFr: updateData.summaryFr,
+        downloadUrl: updateData.downloadUrl,
+      }
+    });
+    return NextResponse.json({ success: true, data: updated });
+  } catch (error) {
+    console.error('Error updating book:', error);
+    return NextResponse.json({ success: false, error: 'Failed to update book' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id } = body;
+
+    await prisma.book.delete({
+      where: { id: parseInt(id) }
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Book deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting book:', error);
+    return NextResponse.json({ success: false, error: 'Failed to delete book' }, { status: 500 });
+  }
+}

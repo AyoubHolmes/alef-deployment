@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
         published: true
       },
       orderBy: {
-        date: 'desc'
+        createdAt: 'desc'
       }
     });
 
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
         authorFr: body.authorFr,
         translatorAr: body.translatorAr,
         translatorFr: body.translatorFr,
-        date: new Date(body.date),
+        date: body.date ? new Date(body.date) : new Date(),
         category: ArticleCategory.VISUAL_ARTS,
         categoryLabelAr: 'فنون بصرية',
         categoryLabelFr: 'Arts Visuels',

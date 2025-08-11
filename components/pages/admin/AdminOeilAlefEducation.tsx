@@ -30,19 +30,38 @@ interface Article {
 
 const AdminOeilAlefEducation: React.FC = () => {
   const { language } = useLanguage();
-  const [articles, setArticles] = useState<Article[]>([
-    {
-      id: '1',
-      title: { ar: 'مقال التعليم 1', fr: 'Article Éducation 1' },
-      author: { ar: 'كاتب عربي', fr: 'Auteur français' },
-      excerpt: { ar: 'مقتطف من المقال', fr: 'Extrait de l\'article' },
-      content: { ar: 'محتوى المقال', fr: 'Contenu de l\'article' },
-      additionalImages: [],
-      publishDate: '2024-01-15',
-      status: 'published',
-      category: 'education'
+  const [articles, setArticles] = useState<Article[]>([]);
+
+  const fetchArticles = async () => {
+    try {
+      const response = await fetch('/api/articles?category=EDUCATION');
+      const data = await response.json();
+      
+      if (data.success) {
+        const transformedArticles = data.data.map((article: any) => ({
+          id: article.id.toString(),
+          title: { ar: article.titleAr, fr: article.titleFr },
+          author: { ar: article.authorAr, fr: article.authorFr },
+          translator: article.translatorAr ? { ar: article.translatorAr, fr: article.translatorFr } : undefined,
+          excerpt: { ar: article.excerptAr, fr: article.excerptFr },
+          content: { ar: article.contentAr, fr: article.contentFr },
+          featuredImage: article.image,
+          additionalImages: article.additionalImages || [],
+          publishDate: article.date.split('T')[0],
+          status: article.published ? 'published' : 'draft',
+          category: 'education'
+        }));
+        setArticles(transformedArticles);
+      }
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      toast.error(language === 'ar' ? 'خطأ في تحميل المقالات' : 'Erreur lors du chargement des articles');
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchArticles();
+  }, []);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
@@ -96,29 +115,63 @@ const AdminOeilAlefEducation: React.FC = () => {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formData.title?.ar || !formData.title?.fr || !formData.content?.ar || !formData.content?.fr) {
       toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Veuillez remplir tous les champs requis');
       return;
     }
 
-    const articleData = {
-      ...formData,
-      id: editingArticle?.id || Date.now().toString(),
-      publishDate: editingArticle?.publishDate || new Date().toISOString().split('T')[0]
-    } as Article;
+    try {
+      const apiData = {
+        titleAr: formData.title.ar,
+        titleFr: formData.title.fr,
+        authorAr: formData.author?.ar || '',
+        authorFr: formData.author?.fr || '',
+        translatorAr: formData.translator?.ar || null,
+        translatorFr: formData.translator?.fr || null,
+        date: formData.publishDate || new Date().toISOString(),
+        category: 'EDUCATION',
+        categoryLabelAr: 'التعليم',
+        categoryLabelFr: 'Éducation',
+        image: formData.featuredImage || '',
+        excerptAr: formData.excerpt?.ar || '',
+        excerptFr: formData.excerpt?.fr || '',
+        contentAr: formData.content.ar,
+        contentFr: formData.content.fr,
+        additionalImages: formData.additionalImages || [],
+        published: formData.status === 'published'
+      };
 
-    if (editingArticle) {
-      setArticles(prev => prev.map(article => 
-        article.id === editingArticle.id ? articleData : article
-      ));
-      toast.success(language === 'ar' ? 'تم تحديث المقال' : 'Article mis à jour');
-    } else {
-      setArticles(prev => [...prev, articleData]);
-      toast.success(language === 'ar' ? 'تم إضافة المقال' : 'Article ajouté');
+      let response;
+      if (editingArticle) {
+        response = await fetch('/api/articles', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingArticle.id, ...apiData })
+        });
+      } else {
+        response = await fetch('/api/articles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(apiData)
+        });
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success(editingArticle 
+          ? (language === 'ar' ? 'تم تحديث المقال' : 'Article mis à jour')
+          : (language === 'ar' ? 'تم إضافة المقال' : 'Article ajouté')
+        );
+        await fetchArticles();
+        resetForm();
+      } else {
+        toast.error(language === 'ar' ? 'خطأ في حفظ المقال' : 'Erreur lors de la sauvegarde');
+      }
+    } catch (error) {
+      console.error('Error saving article:', error);
+      toast.error(language === 'ar' ? 'خطأ في حفظ المقال' : 'Erreur lors de la sauvegarde');
     }
-
-    resetForm();
   };
 
   const handleEdit = (article: Article) => {
@@ -127,10 +180,26 @@ const AdminOeilAlefEducation: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm(language === 'ar' ? 'هل أنت متأكد من حذف هذا المقال؟' : 'Êtes-vous sûr de supprimer cet article ?')) {
-      setArticles(prev => prev.filter(article => article.id !== id));
-      toast.success(language === 'ar' ? 'تم حذف المقال' : 'Article supprimé');
+      try {
+        const response = await fetch('/api/articles', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          toast.success(language === 'ar' ? 'تم حذف المقال' : 'Article supprimé');
+          await fetchArticles();
+        } else {
+          toast.error(language === 'ar' ? 'خطأ في حذف المقال' : 'Erreur lors de la suppression');
+        }
+      } catch (error) {
+        console.error('Error deleting article:', error);
+        toast.error(language === 'ar' ? 'خطأ في حذف المقال' : 'Erreur lors de la suppression');
+      }
     }
   };
 
