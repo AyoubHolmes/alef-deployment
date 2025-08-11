@@ -41,16 +41,7 @@ const DesktopNav = () => {
         { name: 'education', path: '/activities/education' },
       ]
     },
-    { 
-      name: 'activities', 
-      path: '/activities',
-      hasDropdown: true,
-      dropdownItems: [
-        { name: 'artExhibitions', path: '/activities/art-exhibitions' },
-        { name: 'literaryGatherings', path: '/activities/literary-gatherings' },
-        { name: 'educationalActivities', path: '/activities/educational-activities' },
-      ]
-    },
+    { name: 'activities', path: '/activities' },
     { 
       name: 'publications', 
       path: '/publications',
