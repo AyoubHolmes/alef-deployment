@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/language';
@@ -16,83 +16,74 @@ interface LiteraryThoughtArticle {
   id: number;
   title: { ar: string; fr: string };
   author: { ar: string; fr: string };
-  translator?: { ar: string; fr: string };
   date: string;
-  status: { ar: string; fr: string };
   content: { ar: string; fr: string };
   excerpt: { ar: string; fr: string };
   image?: string;
-  additionalImages?: string[];
-  authorImage?: string;
+  published: boolean;
 }
 
 const AdminOeilAlefLiteraryThought: React.FC = () => {
   const { language } = useLanguage();
-  const [articles, setArticles] = useState<LiteraryThoughtArticle[]>([
-    {
-      id: 1,
-      title: { 
-        ar: 'النقد الأدبي المغربي المعاصر', 
-        fr: 'La critique littéraire marocaine contemporaine' 
-      },
-      author: { 
-        ar: 'د. محمد برادة', 
-        fr: 'Dr. Mohamed Berrada' 
-      },
-      translator: { 
-        ar: 'نادية بن علي', 
-        fr: 'Nadia Ben Ali' 
-      },
-      date: '2024-01-10',
-      status: { ar: 'منشور', fr: 'Publié' },
-      content: { 
-        ar: 'يشهد النقد الأدبي المغربي المعاصر تنوعاً في المناهج والتوجهات...', 
-        fr: 'La critique littéraire marocaine contemporaine témoigne d\'une diversité dans les méthodes...' 
-      },
-      excerpt: { 
-        ar: 'تحليل للمناهج النقدية الحديثة في الأدب المغربي...', 
-        fr: 'Analyse des méthodes critiques modernes dans la littérature marocaine...' 
-      },
-      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=600&fit=crop',
-      additionalImages: [
-        'https://images.unsplash.com/photo-1582562124811-c09040d0a901?w=600&h=400&fit=crop',
-        'https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=600&h=400&fit=crop'
-      ],
-      authorImage: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=150&h=150&fit=crop'
+  const [articles, setArticles] = useState<LiteraryThoughtArticle[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchArticles = async () => {
+    try {
+      const response = await fetch('/api/articles?category=LITERARY_THOUGHT');
+      const data = await response.json();
+      
+      if (data.success) {
+        const transformedArticles = data.data.map((article: any) => ({
+          id: article.id,
+          title: { ar: article.titleAr, fr: article.titleFr },
+          author: { ar: article.authorAr, fr: article.authorFr },
+          date: article.createdAt.split('T')[0],
+          content: { ar: article.contentAr, fr: article.contentFr },
+          excerpt: { ar: article.excerptAr || '', fr: article.excerptFr || '' },
+          image: article.image || '',
+          published: article.published
+        }));
+        setArticles(transformedArticles);
+      } else {
+        toast.error(language === 'ar' ? 'فشل في تحميل البيانات' : 'Échec du chargement des données');
+      }
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      toast.error(language === 'ar' ? 'خطأ في تحميل البيانات' : 'Erreur lors du chargement');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  useEffect(() => {
+    fetchArticles();
+  }, []);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<LiteraryThoughtArticle | null>(null);
   const [formData, setFormData] = useState<Omit<LiteraryThoughtArticle, 'id'>>({
     title: { ar: '', fr: '' },
     author: { ar: '', fr: '' },
-    translator: { ar: '', fr: '' },
-    date: new Date().toISOString().split('T')[0],
-    status: { ar: 'مسودة', fr: 'Brouillon' },
+    date: '',
     content: { ar: '', fr: '' },
     excerpt: { ar: '', fr: '' },
     image: '',
-    additionalImages: [],
-    authorImage: ''
+    published: true
   });
 
-  const [newAdditionalImage, setNewAdditionalImage] = useState('');
+
 
   const resetForm = () => {
     setFormData({
       title: { ar: '', fr: '' },
       author: { ar: '', fr: '' },
-      translator: { ar: '', fr: '' },
-      date: new Date().toISOString().split('T')[0],
-      status: { ar: 'مسودة', fr: 'Brouillon' },
+      date: '',
       content: { ar: '', fr: '' },
       excerpt: { ar: '', fr: '' },
       image: '',
-      additionalImages: [],
-      authorImage: ''
+      published: true
     });
-    setNewAdditionalImage('');
     setEditingArticle(null);
   };
 
@@ -106,53 +97,104 @@ const AdminOeilAlefLiteraryThought: React.FC = () => {
     setFormData({
       title: article.title,
       author: article.author,
-      translator: article.translator || { ar: '', fr: '' },
       date: article.date,
-      status: article.status,
       content: article.content,
       excerpt: article.excerpt,
       image: article.image || '',
-      additionalImages: article.additionalImages || [],
-      authorImage: article.authorImage || ''
+      published: article.published
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    setArticles(articles.filter(article => article.id !== id));
-    toast.success(language === 'ar' ? 'تم حذف المقال بنجاح' : 'Article supprimé avec succès');
+  const handleDelete = async (id: number) => {
+    if (!confirm(language === 'ar' ? 'هل تريد حذف هذا المقال؟' : 'Voulez-vous supprimer cet article?')) return;
+
+    try {
+      const response = await fetch('/api/articles', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success(language === 'ar' ? 'تم حذف المقال بنجاح' : 'Article supprimé avec succès');
+        await fetchArticles();
+      } else {
+        toast.error(language === 'ar' ? 'خطأ في حذف المقال' : 'Erreur lors de la suppression');
+      }
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      toast.error(language === 'ar' ? 'خطأ في حذف المقال' : 'Erreur lors de la suppression');
+    }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.title.ar || !formData.title.fr || !formData.author.ar || !formData.author.fr) {
       toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Veuillez remplir tous les champs requis');
       return;
     }
 
-    if (editingArticle) {
-      setArticles(articles.map(article => 
-        article.id === editingArticle.id 
-          ? { 
-              ...formData, 
-              id: editingArticle.id,
-              translator: formData.translator?.ar || formData.translator?.fr ? formData.translator : undefined
-            }
-          : article
-      ));
-      toast.success(language === 'ar' ? 'تم تحديث المقال بنجاح' : 'Article mis à jour avec succès');
-    } else {
-      const newArticle = {
-        ...formData,
-        id: Math.max(...articles.map(a => a.id), 0) + 1,
-        translator: formData.translator?.ar || formData.translator?.fr ? formData.translator : undefined
+    try {
+      const apiData = {
+        titleAr: formData.title.ar,
+        titleFr: formData.title.fr,
+        authorAr: formData.author.ar,
+        authorFr: formData.author.fr,
+        contentAr: formData.content.ar,
+        contentFr: formData.content.fr,
+        excerptAr: formData.excerpt.ar,
+        excerptFr: formData.excerpt.fr,
+        image: formData.image || '',
+        published: formData.published,
+        category: 'LITERARY_THOUGHT',
+        additionalImages: []
       };
-      setArticles([...articles, newArticle]);
-      toast.success(language === 'ar' ? 'تم إضافة المقال بنجاح' : 'Article ajouté avec succès');
-    }
 
-    setIsDialogOpen(false);
-    resetForm();
+      let response;
+      if (editingArticle) {
+        response = await fetch('/api/articles', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: editingArticle.id, ...apiData })
+        });
+      } else {
+        response = await fetch('/api/articles', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(apiData)
+        });
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        toast.success(editingArticle 
+          ? (language === 'ar' ? 'تم تحديث المقال بنجاح' : 'Article mis à jour avec succès')
+          : (language === 'ar' ? 'تم إضافة المقال بنجاح' : 'Article ajouté avec succès')
+        );
+        await fetchArticles();
+        setIsDialogOpen(false);
+        resetForm();
+      } else {
+        toast.error(language === 'ar' ? 'خطأ في حفظ المقال' : 'Erreur lors de la sauvegarde');
+      }
+    } catch (error) {
+      console.error('Error saving article:', error);
+      toast.error(language === 'ar' ? 'خطأ في حفظ المقال' : 'Erreur lors de la sauvegarde');
+    }
   };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">
+            {language === 'ar' ? 'جارٍ التحميل...' : 'Chargement...'}
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -216,33 +258,9 @@ const AdminOeilAlefLiteraryThought: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>{language === 'ar' ? 'المترجم (عربي) - اختياري' : 'Traducteur (Arabe) - Optionnel'}</Label>
-                    <Input
-                      value={formData.translator?.ar || ''}
-                      onChange={(e) => setFormData({...formData, translator: {...formData.translator, ar: e.target.value, fr: formData.translator?.fr || ''}})}
-                      className={language === 'ar' ? 'text-right font-cairo' : 'font-montserrat'}
-                    />
-                  </div>
-                  <div>
-                    <Label>{language === 'ar' ? 'المترجم (فرنسي) - اختياري' : 'Traducteur (Français) - Optionnel'}</Label>
-                    <Input
-                      value={formData.translator?.fr || ''}
-                      onChange={(e) => setFormData({...formData, translator: {...formData.translator, fr: e.target.value, ar: formData.translator?.ar || ''}})}
-                    />
-                  </div>
-                </div>
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>{language === 'ar' ? 'التاريخ' : 'Date'}</Label>
-                    <Input
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({...formData, date: e.target.value})}
-                    />
-                  </div>
                   <div>
                     <Label>{language === 'ar' ? 'الصورة الرئيسية' : 'Image Principale'}</Label>
                     <Input
@@ -251,64 +269,21 @@ const AdminOeilAlefLiteraryThought: React.FC = () => {
                       placeholder="https://..."
                     />
                   </div>
-                </div>
-
-                <div>
-                  <Label>{language === 'ar' ? 'صورة المؤلف' : 'Photo Auteur'}</Label>
-                  <Input
-                    value={formData.authorImage}
-                    onChange={(e) => setFormData({...formData, authorImage: e.target.value})}
-                    placeholder="https://..."
-                  />
-                </div>
-
-                <div>
-                  <Label>{language === 'ar' ? 'الصور الإضافية' : 'Images Additionnelles'}</Label>
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Input
-                        value={newAdditionalImage}
-                        onChange={(e) => setNewAdditionalImage(e.target.value)}
-                        placeholder="https://..."
-                        className="flex-1"
-                      />
-                      <Button 
-                        type="button"
-                        onClick={() => {
-                          if (newAdditionalImage.trim()) {
-                            setFormData({
-                              ...formData, 
-                              additionalImages: [...(formData.additionalImages || []), newAdditionalImage.trim()]
-                            });
-                            setNewAdditionalImage('');
-                          }
-                        }}
-                      >
-                        <Plus size={16} />
-                      </Button>
-                    </div>
-                    {formData.additionalImages && formData.additionalImages.length > 0 && (
-                      <div className="space-y-1">
-                        {formData.additionalImages.map((img, index) => (
-                          <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
-                            <span className="flex-1 text-sm truncate">{img}</span>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                const updatedImages = formData.additionalImages?.filter((_, i) => i !== index) || [];
-                                setFormData({...formData, additionalImages: updatedImages});
-                              }}
-                            >
-                              <Trash2 size={14} />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="published"
+                      checked={formData.published}
+                      onChange={(e) => setFormData({...formData, published: e.target.checked})}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="published" className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      {language === 'ar' ? 'منشور' : 'Publié'}
+                    </Label>
                   </div>
                 </div>
+
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -377,13 +352,16 @@ const AdminOeilAlefLiteraryThought: React.FC = () => {
                 <div key={article.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex-1">
                     <h3 className={`font-medium ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {article.title[language]}
+                      {language === 'ar' ? article.title.ar : article.title.fr}
+                      <span className={`ml-2 text-xs px-2 py-1 rounded ${article.published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                        {article.published ? (language === 'ar' ? 'منشور' : 'Publié') : (language === 'ar' ? 'مسودة' : 'Brouillon')}
+                      </span>
                     </h3>
                     <p className={`text-sm text-gray-500 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {article.author[language]} {article.translator && `- ${language === 'ar' ? 'ترجمة:' : 'Trad:'} ${article.translator[language]}`} - {article.date} - {article.status[language]}
+                      {language === 'ar' ? article.author.ar : article.author.fr} - {article.date}
                     </p>
                     <p className={`text-sm text-gray-600 mt-1 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {article.excerpt[language]}
+                      {language === 'ar' ? article.excerpt.ar : article.excerpt.fr}
                     </p>
                   </div>
                   <div className="flex gap-2 ml-4">
@@ -396,6 +374,16 @@ const AdminOeilAlefLiteraryThought: React.FC = () => {
                   </div>
                 </div>
               ))}
+              {articles.length === 0 && (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="text-lg mb-2">
+                    {language === 'ar' ? 'لا توجد مقالات' : 'Aucun article'}
+                  </div>
+                  <div className="text-sm">
+                    {language === 'ar' ? 'ابدأ بإضافة مقال جديد' : 'Commencez par ajouter un nouvel article'}
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

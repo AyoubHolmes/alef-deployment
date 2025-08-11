@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useLanguage } from '@/contexts/language';
@@ -29,7 +29,8 @@ interface Article {
 }
 
 const AdminOeilAlefEducation: React.FC = () => {
-  const { language } = useLanguage();
+  // const { language } = useLanguage();
+  const language: "ar" | "fr" = 'ar';
   const [articles, setArticles] = useState<Article[]>([]);
 
   const fetchArticles = async () => {
