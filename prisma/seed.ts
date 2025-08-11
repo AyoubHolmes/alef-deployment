@@ -268,6 +268,227 @@ async function main() {
 
   console.log(`✅ Created ${events.length} literary events`);
 
+  // Seed Partners Page Content
+  const partnersContent = await prisma.partnersPageContent.upsert({
+    where: { id: 1 },
+    create: {
+      pageTitleAr: 'شركاؤنا',
+      pageTitleFr: 'Nos partenaires',
+      pageDescriptionAr: 'نفتخر بالعمل مع مجموعة متميزة من المؤسسات والمنظمات التي تشاركنا رؤيتنا لتعزيز الثقافة والفنون',
+      pageDescriptionFr: "Nous sommes fiers de travailler avec un groupe distingué d'institutions et d'organisations qui partagent notre vision pour la promotion de la culture et des arts",
+    },
+    update: {}
+  });
+
+  // Seed Partners
+  const partners = await Promise.all([
+    prisma.partner.create({
+      data: {
+        nameAr: 'وزارة الثقافة المغربية',
+        nameFr: 'Ministère de la Culture Marocain',
+        descriptionAr: 'الشريك الرسمي للجمعية في مجال تنظيم الفعاليات الثقافية والأدبية الكبرى',
+        descriptionFr: "Partenaire officiel de l'association dans l'organisation des grands événements culturels et littéraires",
+        logo: 'https://images.unsplash.com/photo-1599305445671-ac291c95aaa9?q=80&w=250',
+        website: 'https://www.minculture.gov.ma/',
+        type: 'institutional'
+      }
+    }),
+    prisma.partner.create({
+      data: {
+        nameAr: 'جامعة محمد الخامس',
+        nameFr: 'Université Mohammed V',
+        descriptionAr: 'شراكة استراتيجية في مجال البحث العلمي والمؤتمرات الأكاديمية',
+        descriptionFr: 'Partenariat stratégique dans le domaine de la recherche scientifique et des conférences académiques',
+        logo: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?q=80&w=250',
+        website: 'https://www.um5.ac.ma/',
+        type: 'academic'
+      }
+    }),
+  ]);
+
+  // Seed Collaborative Programs
+  const programs = await Promise.all([
+    prisma.collaborativeProgram.create({
+      data: {
+        titleAr: 'مشروع الترجمات الأدبية',
+        titleFr: 'Projet de traductions littéraires',
+        descriptionAr: 'مشروع مشترك مع المعهد الفرنسي لترجمة الأعمال الأدبية المغربية إلى اللغة الفرنسية والعكس',
+        descriptionFr: "Projet conjoint avec l'Institut français pour la traduction d'œuvres littéraires marocaines vers le français et vice versa",
+        partnerNameAr: 'المعهد الفرنسي بالمغرب',
+        partnerNameFr: 'Institut Français du Maroc',
+      }
+    }),
+    prisma.collaborativeProgram.create({
+      data: {
+        titleAr: 'ملتقى الشعراء الشباب',
+        titleFr: 'Forum des jeunes poètes',
+        descriptionAr: 'برنامج سنوي لاكتشاف ودعم المواهب الشعرية الشابة بالتعاون مع وزارة الثقافة',
+        descriptionFr: 'Programme annuel pour découvrir et soutenir les jeunes talents poétiques en collaboration avec le Ministère de la Culture',
+        partnerNameAr: 'وزارة الثقافة المغربية',
+        partnerNameFr: 'Ministère de la Culture Marocain',
+      }
+    }),
+  ]);
+
+  console.log(`✅ Seeded partners content (${partnersContent.id}), ${partners.length} partners and ${programs.length} programs`);
+
+  // Seed Cultural Channel Content and Videos
+  const culturalContent = await prisma.culturalChannelContent.upsert({
+    where: { id: 1 },
+    create: {
+      pageTitleAr: 'القناة الثقافية والأدبية',
+      pageTitleFr: 'Chaîne Culturelle et Littéraire',
+      pageDescriptionAr: 'مجموعة من الفيديوهات الثقافية والأدبية',
+      pageDescriptionFr: 'Une collection de vidéos culturelles et littéraires',
+    },
+    update: {}
+  });
+
+  await prisma.culturalChannelVideo.deleteMany({});
+  await prisma.culturalChannelVideo.createMany({
+    data: [
+      {
+        youtubeId: 'N0VVXybI_Bk',
+        titleAr: 'مناظرة: اللغة العربية وتجديد الخطاب الديني',
+        titleFr: "Débat: La langue arabe et le renouvellement du discours religieux",
+        descriptionAr: 'مناقشة فكرية حول اللغة العربية والخطاب الديني المعاصر.',
+        descriptionFr: "Discussion intellectuelle sur la langue arabe et le discours religieux contemporain.",
+        thumbnail: 'https://img.youtube.com/vi/N0VVXybI_Bk/mqdefault.jpg',
+        publishDate: new Date('2024-01-15'),
+        category: 'culture'
+      },
+      {
+        youtubeId: 'gV6_1538O7E',
+        titleAr: 'محاضرة: الكتابة بالعربية في الزمن الرقمي',
+        titleFr: "Conférence: L'écriture en arabe à l'ère numérique",
+        descriptionAr: 'محاضرة حول تحديات وفضاءات الكتابة الرقمية.',
+        descriptionFr: "Conférence sur les défis et les espaces de l'écriture numérique.",
+        thumbnail: 'https://img.youtube.com/vi/gV6_1538O7E/mqdefault.jpg',
+        publishDate: new Date('2024-02-10'),
+        category: 'littérature'
+      },
+      {
+        youtubeId: 'MWOx7sXnl7g',
+        titleAr: 'الترجمة وتطوير المعرفة',
+        titleFr: 'La traduction et le développement du savoir',
+        descriptionAr: 'نقاش حول دور الترجمة في إثراء المعرفة.',
+        descriptionFr: 'Discussion sur le rôle de la traduction dans l’enrichissement du savoir.',
+        thumbnail: 'https://img.youtube.com/vi/MWOx7sXnl7g/mqdefault.jpg',
+        publishDate: new Date('2024-03-05'),
+        category: 'traduction'
+      }
+    ]
+  });
+
+  console.log(`✅ Seeded cultural channel content (${culturalContent.id}) and videos`);
+
+  // Seed Publications Issues
+  await prisma.publicationIssue.deleteMany({ where: { magazine: 'AMIS_DIONYSOS' } });
+  await prisma.publicationIssue.createMany({
+    data: [
+      {
+        magazine: 'AMIS_DIONYSOS',
+        number: 12,
+        titleAr: 'عدد خاص: الفنون المعاصرة',
+        titleFr: 'Édition spéciale: Arts contemporains',
+        date: new Date('2024-03-01'),
+        image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop',
+        featuredAr: 'ملف خاص عن الفن المغربي المعاصر',
+        featuredFr: "Dossier spécial sur l'art marocain contemporain",
+        contentAr: 'مقالات متخصصة، حوارات، ومعرض مصور للأعمال الحديثة.',
+        contentFr: "Articles spécialisés, entretiens et galerie d'œuvres modernes."
+      },
+      {
+        magazine: 'AMIS_DIONYSOS',
+        number: 11,
+        titleAr: 'الأدب والذاكرة',
+        titleFr: 'Littérature et mémoire',
+        date: new Date('2024-02-01'),
+        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
+        featuredAr: 'استكشاف العلاقة بين الأدب والذاكرة الجماعية',
+        featuredFr: 'Exploration de la relation entre littérature et mémoire collective',
+        contentAr: 'دراسات أكاديمية ونصوص إبداعية حول الذاكرة الثقافية.',
+        contentFr: 'Études académiques et textes créatifs sur la mémoire culturelle.'
+      }
+    ]
+  });
+
+  await prisma.publicationIssue.deleteMany({ where: { magazine: 'ART_CHIV' } });
+  await prisma.publicationIssue.createMany({
+    data: [
+      {
+        magazine: 'ART_CHIV',
+        number: 8,
+        titleAr: 'الشعر والفلسفة',
+        titleFr: 'Poésie et philosophie',
+        date: new Date('2024-01-01'),
+        image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop',
+        featuredAr: 'يتقاطع الشعر مع الفكر الفلسفي',
+        featuredFr: 'La poésie rencontre la pensée philosophique',
+        contentAr: 'قصائد ودراسات حول الفلسفة والشعر.',
+        contentFr: 'Poèmes et études sur la philosophie et la poésie.'
+      },
+      {
+        magazine: 'ART_CHIV',
+        number: 7,
+        titleAr: 'أصوات نسائية في الأدب',
+        titleFr: 'Voix féminines en littérature',
+        date: new Date('2023-10-01'),
+        image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
+        featuredAr: 'إبداع نسائي مغربي معاصر',
+        featuredFr: 'Créativité féminine marocaine contemporaine',
+        contentAr: 'نصوص إبداعية ودراسات نقدية.',
+        contentFr: 'Textes créatifs et études critiques.'
+      }
+    ]
+  });
+
+  await prisma.publicationIssue.deleteMany({ where: { magazine: 'BIAIS_ARTISTIQUES' } });
+  await prisma.publicationIssue.createMany({
+    data: [
+      {
+        magazine: 'BIAIS_ARTISTIQUES',
+        number: 5,
+        titleAr: 'الفن التفاعلي والتكنولوجيا',
+        titleFr: 'Art interactif et technologie',
+        date: new Date('2024-02-15'),
+        image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=600&fit=crop',
+        featuredAr: 'حدود الفن الرقمي والتفاعل البصري',
+        featuredFr: "Frontières de l'art numérique et de l'interaction visuelle",
+        contentAr: 'مقابلات ودراسات حول مستقبل الفن الرقمي.',
+        contentFr: 
+          "Entretiens et études sur l'avenir de l'art numérique."
+      }
+    ]
+  });
+
+  console.log('✅ Seeded publications issues for Amis Dionysos, Art\'Chiv, and Biais Artistiques');
+
+  // Optionally seed one PROEMES article if none exists
+  const proemesCount = await prisma.article.count({ where: { category: 'PROEMES' as any } });
+  if (proemesCount === 0) {
+    await prisma.article.create({
+      data: {
+        titleAr: 'نثريات: نصوص قصيرة',
+        titleFr: 'Proèmes: Textes courts',
+        authorAr: 'مجموعة مؤلفين',
+        authorFr: 'Collectif',
+        date: new Date('2024-04-10'),
+        category: 'PROEMES' as any,
+        categoryLabelAr: 'نثريات',
+        categoryLabelFr: 'Proèmes',
+        image: 'https://images.unsplash.com/photo-1455390582262-044cdead277a',
+        excerptAr: 'مختارات نثرية قصيرة.',
+        excerptFr: 'Sélection de courts proèmes.',
+        contentAr: 'نصوص قصيرة متنوعة...',
+        contentFr: 'Textes courts variés...',
+        additionalImages: [],
+        published: true
+      }
+    });
+    console.log('✅ Seeded one PROEMES article');
+  }
+
   console.log('🎉 Database seeding completed successfully!');
 }
 

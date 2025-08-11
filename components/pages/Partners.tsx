@@ -35,13 +35,47 @@ const Partners = () => {
   const { t, language } = useLanguage();
   const [adminContent, setAdminContent] = useState<PartnersContent | null>(null);
   
-  // Load admin content
+  // Load content from API (fallback to defaults)
   useEffect(() => {
-    const savedContent = localStorage.getItem('partnersContent');
-    if (savedContent) {
-      setAdminContent(JSON.parse(savedContent));
+    async function load() {
+      try {
+        const res = await fetch('/api/partners', { cache: 'no-store' });
+        const json = await res.json();
+        if (json?.success) {
+          const c = json.data.content;
+          const partners = json.data.partners || [];
+          const programs = json.data.programs || [];
+          setAdminContent({
+            pageTitle: {
+              ar: c?.pageTitleAr || (language === 'ar' ? 'شركاؤنا' : 'Nos partenaires'),
+              fr: c?.pageTitleFr || 'Nos partenaires',
+            },
+            pageDescription: {
+              ar: c?.pageDescriptionAr || 'نفتخر بالعمل مع مجموعة متميزة من المؤسسات والمنظمات التي تشاركنا رؤيتنا لتعزيز الثقافة والفنون',
+              fr: c?.pageDescriptionFr || "Nous sommes fiers de travailler avec un groupe distingué d'institutions et d'organisations qui partagent notre vision pour la promotion de la culture et des arts",
+            },
+            partners: partners.map((p: any) => ({
+              id: String(p.id),
+              name: { ar: p.nameAr, fr: p.nameFr },
+              description: { ar: p.descriptionAr, fr: p.descriptionFr },
+              logo: p.logo,
+              website: p.website || '',
+              type: p.type,
+            })),
+            programs: programs.map((pr: any) => ({
+              id: String(pr.id),
+              title: { ar: pr.titleAr, fr: pr.titleFr },
+              description: { ar: pr.descriptionAr, fr: pr.descriptionFr },
+              partner: { ar: pr.partnerNameAr, fr: pr.partnerNameFr },
+            })),
+          });
+        }
+      } catch (e) {
+        // ignore; will use defaults below
+      }
     }
-  }, []);
+    load();
+  }, [language]);
   
   // Set the document title based on language
   useEffect(() => {

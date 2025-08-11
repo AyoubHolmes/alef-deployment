@@ -69,16 +69,86 @@ const PartnersManager: React.FC = () => {
   const getLabel = (key: string) => labels[key as keyof typeof labels]?.[language] || key;
 
   useEffect(() => {
-    const savedContent = localStorage.getItem('partnersContent');
-    if (savedContent) {
-      setContent(JSON.parse(savedContent));
+    async function load() {
+      try {
+        const res = await fetch('/api/partners', { cache: 'no-store' });
+        const json = await res.json();
+        if (json?.success) {
+          const c = json.data.content;
+          const partners = json.data.partners || [];
+          const programs = json.data.programs || [];
+          setContent({
+            pageTitle: {
+              ar: c?.pageTitleAr || '',
+              fr: c?.pageTitleFr || '',
+            },
+            pageDescription: {
+              ar: c?.pageDescriptionAr || '',
+              fr: c?.pageDescriptionFr || '',
+            },
+            partners: partners.map((p: any) => ({
+              id: String(p.id),
+              name: { ar: p.nameAr, fr: p.nameFr },
+              description: { ar: p.descriptionAr, fr: p.descriptionFr },
+              logo: p.logo,
+              website: p.website || '',
+              type: p.type,
+            })),
+            programs: programs.map((pr: any) => ({
+              id: String(pr.id),
+              title: { ar: pr.titleAr, fr: pr.titleFr },
+              description: { ar: pr.descriptionAr, fr: pr.descriptionFr },
+              partner: { ar: pr.partnerNameAr, fr: pr.partnerNameFr },
+            })),
+          });
+        }
+      } catch (e) {
+        // ignore
+      }
     }
+    load();
   }, []);
 
-  const handleSave = () => {
-    localStorage.setItem('partnersContent', JSON.stringify(content));
-    localStorage.setItem('partners', JSON.stringify(content.partners));
-    toast.success(getLabel('contentSaved'));
+  const handleSave = async () => {
+    try {
+      const res = await fetch('/api/partners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: {
+            pageTitleAr: content.pageTitle.ar,
+            pageTitleFr: content.pageTitle.fr,
+            pageDescriptionAr: content.pageDescription.ar,
+            pageDescriptionFr: content.pageDescription.fr,
+          },
+          partners: content.partners.map(p => ({
+            nameAr: p.name.ar,
+            nameFr: p.name.fr,
+            descriptionAr: p.description.ar,
+            descriptionFr: p.description.fr,
+            logo: p.logo,
+            website: p.website,
+            type: p.type,
+          })),
+          programs: content.programs.map(pr => ({
+            titleAr: pr.title.ar,
+            titleFr: pr.title.fr,
+            descriptionAr: pr.description.ar,
+            descriptionFr: pr.description.fr,
+            partnerNameAr: pr.partner.ar,
+            partnerNameFr: pr.partner.fr,
+          }))
+        })
+      });
+      const json = await res.json();
+      if (json?.success) {
+        toast.success(getLabel('contentSaved'));
+      } else {
+        toast.error('Failed to save');
+      }
+    } catch (e) {
+      toast.error('Failed to save');
+    }
   };
 
   const addPartner = () => {

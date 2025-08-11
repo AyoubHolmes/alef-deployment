@@ -58,10 +58,38 @@ const CulturalChannelManager: React.FC = () => {
   const getLabel = (key: string) => labels[key as keyof typeof labels]?.[language] || key;
 
   useEffect(() => {
-    const savedContent = localStorage.getItem('culturalChannelContent');
-    if (savedContent) {
-      setContent(JSON.parse(savedContent));
+    async function load() {
+      try {
+        const res = await fetch('/api/cultural-channel', { cache: 'no-store' });
+        const json = await res.json();
+        if (json?.success) {
+          const apiContent = json.data.content;
+          const apiVideos = json.data.videos || [];
+          setContent({
+            pageTitle: {
+              ar: apiContent?.pageTitleAr || 'القناة الثقافية والأدبية',
+              fr: apiContent?.pageTitleFr || 'Chaîne Culturelle et Littéraire',
+            },
+            pageDescription: {
+              ar: apiContent?.pageDescriptionAr || 'مجموعة من الفيديوهات الثقافية والأدبية',
+              fr: apiContent?.pageDescriptionFr || 'Une collection de vidéos culturelles et littéraires',
+            },
+            videos: apiVideos.map((v: any) => ({
+              id: String(v.id),
+              title: { ar: v.titleAr, fr: v.titleFr },
+              description: { ar: v.descriptionAr || '', fr: v.descriptionFr || '' },
+              youtubeId: v.youtubeId,
+              thumbnail: v.thumbnail || `https://img.youtube.com/vi/${v.youtubeId}/maxresdefault.jpg`,
+              publishDate: (v.publishDate || new Date().toISOString()).slice(0, 10),
+              category: v.category || ''
+            }))
+          });
+        }
+      } catch (e) {
+        // ignore and keep defaults
+      }
     }
+    load();
   }, []);
 
   const extractYouTubeId = (url: string): string => {
@@ -70,9 +98,39 @@ const CulturalChannelManager: React.FC = () => {
     return match ? match[1] : url;
   };
 
-  const handleSave = () => {
-    localStorage.setItem('culturalChannelContent', JSON.stringify(content));
-    toast.success(getLabel('contentSaved'));
+  const handleSave = async () => {
+    try {
+      const res = await fetch('/api/cultural-channel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: {
+            pageTitleAr: content.pageTitle.ar,
+            pageTitleFr: content.pageTitle.fr,
+            pageDescriptionAr: content.pageDescription.ar,
+            pageDescriptionFr: content.pageDescription.fr,
+          },
+          videos: content.videos.map(v => ({
+            youtubeId: v.youtubeId,
+            titleAr: v.title.ar,
+            titleFr: v.title.fr,
+            descriptionAr: v.description.ar,
+            descriptionFr: v.description.fr,
+            thumbnail: v.thumbnail,
+            publishDate: v.publishDate,
+            category: v.category,
+          }))
+        })
+      });
+      const json = await res.json();
+      if (json?.success) {
+        toast.success(getLabel('contentSaved'));
+      } else {
+        toast.error('Failed to save');
+      }
+    } catch (e) {
+      toast.error('Failed to save');
+    }
   };
 
   const addVideo = () => {

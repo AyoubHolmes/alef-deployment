@@ -139,3 +139,100 @@ enum EventStatus {
   PAST
   CANCELLED
 }
+
+// Cultural Channel Models
+model CulturalChannelContent {
+  id                 Int      @id @default(autoincrement())
+  pageTitleAr        String
+  pageTitleFr        String
+  pageDescriptionAr  String   @db.Text
+  pageDescriptionFr  String   @db.Text
+  updatedAt          DateTime @updatedAt
+
+  @@map("cultural_channel_content")
+}
+
+model CulturalChannelVideo {
+  id           Int      @id @default(autoincrement())
+  youtubeId    String
+  titleAr      String
+  titleFr      String
+  descriptionAr String  @db.Text
+  descriptionFr String  @db.Text
+  thumbnail    String?
+  publishDate  DateTime
+  category     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([youtubeId])
+  @@map("cultural_channel_videos")
+}
+
+// Publications (Magazines) Models
+enum Magazine {
+  AMIS_DIONYSOS
+  ART_CHIV
+  BIAIS_ARTISTIQUES
+  BOOKS
+}
+
+model PublicationIssue {
+  id              Int      @id @default(autoincrement())
+  magazine        Magazine
+  number          Int
+  titleAr         String
+  titleFr         String
+  date            DateTime
+  image           String
+  featuredAr      String   @db.Text
+  featuredFr      String   @db.Text
+  contentAr       String   @db.Text
+  contentFr       String   @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([magazine, number])
+  @@map("publication_issues")
+}
+
+// Partners Models
+model PartnersPageContent {
+  id                Int      @id @default(autoincrement())
+  pageTitleAr       String
+  pageTitleFr       String
+  pageDescriptionAr String   @db.Text
+  pageDescriptionFr String   @db.Text
+  updatedAt         DateTime @updatedAt
+
+  @@map("partners_page_content")
+}
+
+model Partner {
+  id           Int      @id @default(autoincrement())
+  nameAr       String
+  nameFr       String
+  descriptionAr String  @db.Text
+  descriptionFr String  @db.Text
+  logo         String
+  website      String?
+  type         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("partners")
+}
+
+model CollaborativeProgram {
+  id             Int      @id @default(autoincrement())
+  titleAr        String
+  titleFr        String
+  descriptionAr  String   @db.Text
+  descriptionFr  String   @db.Text
+  partnerNameAr  String
+  partnerNameFr  String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("collaborative_programs")
+}

@@ -1,7 +1,7 @@
 
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useLanguage } from '@/contexts/language';
 import { Button } from "@/components/ui/button";
@@ -13,35 +13,38 @@ const AmisDionysos = () => {
   const { language } = useLanguage();
   const router = useRouter();
   const [selectedIssue, setSelectedIssue] = useState<any>(null);
+  const [issues, setIssues] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const issues = [
-    {
-      id: 1,
-      number: 12,
-      title: language === 'ar' ? 'عدد خاص: الفنون المعاصرة' : 'Édition spéciale: Arts contemporains',
-      date: '2024-03-01',
-      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop',
-      featured: language === 'ar' 
-        ? 'ملف خاص عن الفن المغربي المعاصر'
-        : 'Dossier spécial sur l\'art marocain contemporain',
-      content: language === 'ar'
-        ? 'يضم هذا العدد مجموعة من المقالات المتخصصة في الفن المغربي المعاصر، بالإضافة إلى حوارات حصرية مع أبرز الفنانين المغاربة المعاصرين. كما يتضمن معرضًا مصورًا للأعمال الفنية الحديثة ودراسات نقدية معمقة.'
-        : 'Ce numéro comprend une collection d\'articles spécialisés dans l\'art marocain contemporain, ainsi que des interviews exclusives avec les artistes marocains contemporains les plus éminents. Il comprend également une galerie photographique d\'œuvres d\'art modernes et des études critiques approfondies.'
-    },
-    {
-      id: 2,
-      number: 11,
-      title: language === 'ar' ? 'الأدب والذاكرة' : 'Littérature et mémoire',
-      date: '2024-02-01',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
-      featured: language === 'ar' 
-        ? 'استكشاف العلاقة بين الأدب والذاكرة الجماعية'
-        : 'Exploration de la relation entre littérature et mémoire collective',
-      content: language === 'ar'
-        ? 'عدد مميز يستكشف العلاقة المعقدة بين الأدب والذاكرة الجماعية، من خلال دراسات أكاديمية وإبداعات أدبية متنوعة. يتضمن مقالات حول دور الأدب في حفظ الذاكرة الثقافية ونقلها عبر الأجيال.'
-        : 'Numéro spécial explorant la relation complexe entre littérature et mémoire collective, à travers des études académiques et des créations littéraires variées. Il comprend des articles sur le rôle de la littérature dans la préservation et la transmission de la mémoire culturelle à travers les générations.'
+  useEffect(() => {
+    async function loadIssues() {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/publications/amis-dionysos', { cache: 'no-store' });
+        const json = await res.json();
+        if (json?.success) {
+          const normalized = (json.data || []).map((i: any) => ({
+            id: i.id,
+            number: i.number,
+            title: language === 'ar' ? i.titleAr : i.titleFr,
+            date: i.date,
+            image: i.image,
+            featured: language === 'ar' ? i.featuredAr : i.featuredFr,
+            content: language === 'ar' ? i.contentAr : i.contentFr,
+          }));
+          setIssues(normalized);
+        } else {
+          setError(language === 'ar' ? 'فشل في جلب الأعداد' : 'Échec du chargement des numéros');
+        }
+      } catch (e) {
+        setError(language === 'ar' ? 'حدث خطأ في الاتصال' : 'Erreur de connexion');
+      } finally {
+        setLoading(false);
+      }
     }
-  ];
+    loadIssues();
+  }, [language]);
 
   const handleDownload = (issueId: number) => {
     console.log(`Downloading magazine issue ${issueId}`);
@@ -79,6 +82,12 @@ const AmisDionysos = () => {
           </p>
         </div>
 
+        {loading && (
+          <div className="py-12 text-center">{language === 'ar' ? 'جاري التحميل...' : 'Chargement...'}</div>
+        )}
+        {error && !loading && (
+          <div className="py-12 text-center text-red-600">{error}</div>
+        )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {issues.map((issue) => (
             <div key={issue.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
