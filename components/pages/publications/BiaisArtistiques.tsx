@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useLanguage } from '@/contexts/language';
 import { Button } from "@/components/ui/button";
@@ -22,35 +22,38 @@ const BiaisArtistiques = () => {
   } | null;
 
   const [selectedIssue, setSelectedIssue] = useState<Issue>(null);
+  const [issues, setIssues] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const issues = [
-    {
-      id: 1,
-      number: 5,
-      title: language === 'ar' ? 'الفن التفاعلي والتكنولوجيا' : 'Art interactif et technologie',
-      date: '2024-02-15',
-      image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=400&h=600&fit=crop',
-      featured: language === 'ar' 
-        ? 'استكشاف حدود الفن الرقمي والتفاعل البصري'
-        : 'Explorer les frontières de l\'art numérique et de l\'interaction visuelle',
-      content: language === 'ar'
-        ? 'عدد رائد يتناول أحدث التطورات في الفن التفاعلي والرقمي، مع التركيز على كيفية تأثير التكنولوجيا على الإبداع البصري. يضم مقابلات مع فنانين رقميين رائدين ودراسات حول مستقبل الفن في العصر الرقمي.'
-        : 'Numéro pionnier traitant des derniers développements dans l\'art interactif et numérique, en se concentrant sur l\'impact de la technologie sur la créativité visuelle. Il comprend des interviews avec des artistes numériques pionniers et des études sur l\'avenir de l\'art à l\'ère numérique.'
-    },
-    {
-      id: 2,
-      number: 4,
-      title: language === 'ar' ? 'التراث البصري المغربي' : 'Patrimoine visuel marocain',
-      date: '2023-12-01',
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop',
-      featured: language === 'ar' 
-        ? 'رحلة عبر تاريخ الفنون البصرية في المغرب'
-        : 'Voyage à travers l\'histoire des arts visuels au Maroc',
-      content: language === 'ar'
-        ? 'عدد خاص يحتفي بالتراث البصري المغربي الغني، من الفنون التقليدية إلى التعبيرات المعاصرة. يستكشف تطور الفن المغربي عبر العصور ودوره في تشكيل الهوية الثقافية الوطنية.'
-        : 'Numéro spécial célébrant le riche patrimoine visuel marocain, des arts traditionnels aux expressions contemporaines. Il explore l\'évolution de l\'art marocain à travers les âges et son rôle dans la formation de l\'identité culturelle nationale.'
+  useEffect(() => {
+    async function loadIssues() {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/publications/biais-artistiques', { cache: 'no-store' });
+        const json = await res.json();
+        if (json?.success) {
+          const normalized = (json.data || []).map((i: any) => ({
+            id: i.id,
+            number: i.number,
+            title: language === 'ar' ? i.titleAr : i.titleFr,
+            date: i.date,
+            image: i.image,
+            featured: language === 'ar' ? i.featuredAr : i.featuredFr,
+            content: language === 'ar' ? i.contentAr : i.contentFr,
+          }));
+          setIssues(normalized);
+        } else {
+          setError(language === 'ar' ? 'فشل في جلب الأعداد' : 'Échec du chargement des numéros');
+        }
+      } catch (e) {
+        setError(language === 'ar' ? 'حدث خطأ في الاتصال' : 'Erreur de connexion');
+      } finally {
+        setLoading(false);
+      }
     }
-  ];
+    loadIssues();
+  }, [language]);
 
   const handleDownload = (issueId: number) => {
     console.log(`Downloading magazine issue ${issueId}`);
@@ -88,6 +91,12 @@ const BiaisArtistiques = () => {
           </p>
         </div>
 
+        {loading && (
+          <div className="py-12 text-center">{language === 'ar' ? 'جاري التحميل...' : 'Chargement...'}</div>
+        )}
+        {error && !loading && (
+          <div className="py-12 text-center text-red-600">{error}</div>
+        )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {issues.map((issue) => (
             <div key={issue.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">

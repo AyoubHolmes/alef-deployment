@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client'
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/MainLayout';
 import { useLanguage } from '@/contexts/language';
 import { Button } from "@/components/ui/button";
@@ -13,35 +13,38 @@ const ArtChiv = () => {
   const { language } = useLanguage();
   const router = useRouter();
   const [selectedIssue, setSelectedIssue] = useState<any>(null);
+  const [issues, setIssues] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const issues = [
-    {
-      id: 1,
-      number: 8,
-      title: language === 'ar' ? 'الشعر والفلسفة' : 'Poésie et philosophie',
-      date: '2024-01-01',
-      image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=600&fit=crop',
-      featured: language === 'ar' 
-        ? 'ملف خاص يستكشف العلاقة بين الشعر والفكر الفلسفي'
-        : 'Dossier spécial explorant la relation entre poésie et pensée philosophique',
-      content: language === 'ar'
-        ? 'عدد استثنائي يجمع بين عمق الشعر وثراء الفلسفة، يضم مجموعة من القصائد الفلسفية ودراسات أكاديمية حول تقاطع الشعر مع الفكر الفلسفي. يتضمن أيضًا حوارات مع شعراء وفلاسفة معاصرين حول هذا الموضوع الثري.'
-        : 'Numéro exceptionnel combinant la profondeur de la poésie et la richesse de la philosophie, comprenant une collection de poèmes philosophiques et d\'études académiques sur l\'intersection de la poésie avec la pensée philosophique. Il comprend également des dialogues avec des poètes et philosophes contemporains sur ce sujet riche.'
-    },
-    {
-      id: 2,
-      number: 7,
-      title: language === 'ar' ? 'أصوات نسائية في الأدب' : 'Voix féminines en littérature',
-      date: '2023-10-01',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=600&fit=crop',
-      featured: language === 'ar' 
-        ? 'تسليط الضوء على الكاتبات المغربيات المعاصرات'
-        : 'Mise en lumière des écrivaines marocaines contemporaines',
-      content: language === 'ar'
-        ? 'عدد مخصص للاحتفاء بالإبداع النسائي في الأدب المغربي، يضم نصوصًا إبداعية ودراسات نقدية حول أعمال كاتبات مغربيات بارزات. يستكشف العدد تطور الكتابة النسائية وتأثيرها على المشهد الأدبي المعاصر.'
-        : 'Numéro dédié à la célébration de la créativité féminine dans la littérature marocaine, comprenant des textes créatifs et des études critiques sur les œuvres d\'écrivaines marocaines éminentes. Le numéro explore l\'évolution de l\'écriture féminine et son impact sur la scène littéraire contemporaine.'
+  useEffect(() => {
+    async function loadIssues() {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/publications/art-chiv', { cache: 'no-store' });
+        const json = await res.json();
+        if (json?.success) {
+          const normalized = (json.data || []).map((i: any) => ({
+            id: i.id,
+            number: i.number,
+            title: language === 'ar' ? i.titleAr : i.titleFr,
+            date: i.date,
+            image: i.image,
+            featured: language === 'ar' ? i.featuredAr : i.featuredFr,
+            content: language === 'ar' ? i.contentAr : i.contentFr,
+          }));
+          setIssues(normalized);
+        } else {
+          setError(language === 'ar' ? 'فشل في جلب الأعداد' : 'Échec du chargement des numéros');
+        }
+      } catch (e) {
+        setError(language === 'ar' ? 'حدث خطأ في الاتصال' : 'Erreur de connexion');
+      } finally {
+        setLoading(false);
+      }
     }
-  ];
+    loadIssues();
+  }, [language]);
 
   const handleDownload = (issueId: number) => {
     console.log(`Downloading magazine issue ${issueId}`);
@@ -79,6 +82,12 @@ const ArtChiv = () => {
           </p>
         </div>
 
+        {loading && (
+          <div className="py-12 text-center">{language === 'ar' ? 'جاري التحميل...' : 'Chargement...'}</div>
+        )}
+        {error && !loading && (
+          <div className="py-12 text-center text-red-600">{error}</div>
+        )}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {issues.map((issue) => (
             <div key={issue.id} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
