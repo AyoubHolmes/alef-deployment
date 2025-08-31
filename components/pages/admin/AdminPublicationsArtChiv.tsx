@@ -11,11 +11,11 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { toast } from 'sonner';
+import ImageUpload from '@/components/ui/ImageUpload';
 
 interface ArtChivArticle {
   id: number;
   title: { ar: string; fr: string };
-  author: { ar: string; fr: string };
   date: string;
   status: { ar: string; fr: string };
   content: { ar: string; fr: string };
@@ -38,7 +38,6 @@ const AdminPublicationsArtChiv: React.FC = () => {
         const transformedArticles = data.data.map((issue: any) => ({
           id: issue.id,
           title: { ar: issue.titleAr, fr: issue.titleFr },
-          author: { ar: '', fr: '' }, // Add author fields to API if needed
           date: issue.date.split('T')[0],
           status: { ar: 'منشور', fr: 'Publié' },
           content: { ar: issue.contentAr, fr: issue.contentFr },
@@ -66,7 +65,6 @@ const AdminPublicationsArtChiv: React.FC = () => {
   const [editingArticle, setEditingArticle] = useState<ArtChivArticle | null>(null);
   const [formData, setFormData] = useState<Omit<ArtChivArticle, 'id'>>({
     title: { ar: '', fr: '' },
-    author: { ar: '', fr: '' },
     date: new Date().toISOString().split('T')[0],
     status: { ar: 'مسودة', fr: 'Brouillon' },
     content: { ar: '', fr: '' },
@@ -78,7 +76,6 @@ const AdminPublicationsArtChiv: React.FC = () => {
   const resetForm = () => {
     setFormData({
       title: { ar: '', fr: '' },
-      author: { ar: '', fr: '' },
       date: new Date().toISOString().split('T')[0],
       status: { ar: 'مسودة', fr: 'Brouillon' },
       content: { ar: '', fr: '' },
@@ -98,7 +95,6 @@ const AdminPublicationsArtChiv: React.FC = () => {
     setEditingArticle(article);
     setFormData({
       title: article.title,
-      author: article.author,
       date: article.date,
       status: article.status,
       content: article.content,
@@ -246,28 +242,7 @@ const AdminPublicationsArtChiv: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
-                      {language === 'ar' ? 'المؤلف (عربي)' : 'Auteur (Arabe)'}
-                    </Label>
-                    <Input
-                      value={formData.author.ar}
-                      onChange={(e) => setFormData({...formData, author: {...formData.author, ar: e.target.value}})}
-                      className={language === 'ar' ? 'text-right font-cairo' : 'font-montserrat'}
-                    />
-                  </div>
-                  <div>
-                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
-                      {language === 'ar' ? 'المؤلف (فرنسي)' : 'Auteur (Français)'}
-                    </Label>
-                    <Input
-                      value={formData.author.fr}
-                      onChange={(e) => setFormData({...formData, author: {...formData.author, fr: e.target.value}})}
-                      className="font-montserrat"
-                    />
-                  </div>
-                </div>
+
 
                 <div>
                   <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
@@ -330,6 +305,12 @@ const AdminPublicationsArtChiv: React.FC = () => {
                   </div>
                 </div>
 
+                <ImageUpload
+                  label={language === 'ar' ? 'صورة المقال' : 'Image de l\'article'}
+                  onImageUpload={(imageUrl) => setFormData({...formData, image: imageUrl})}
+                  currentImage={formData.image}
+                />
+
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                     <X size={16} className="mr-2" />
@@ -355,21 +336,30 @@ const AdminPublicationsArtChiv: React.FC = () => {
             <div className="space-y-4">
               {articles.map((article) => (
                 <div key={article.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <h3 className={`font-medium ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {language === 'ar' ? article.title.ar : article.title.fr}
-                      {article.number && (
-                        <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
-                          {language === 'ar' ? `العدد ${article.number}` : `N° ${article.number}`}
-                        </span>
-                      )}
-                    </h3>
-                    <p className={`text-sm text-gray-500 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {article.date} - {language === 'ar' ? article.status.ar : article.status.fr}
-                    </p>
-                    <p className={`text-sm text-gray-600 mt-1 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {language === 'ar' ? article.excerpt.ar : article.excerpt.fr}
-                    </p>
+                  <div className="flex items-start gap-4 flex-1">
+                    {article.image && (
+                      <img 
+                        src={article.image} 
+                        alt={language === 'ar' ? article.title.ar : article.title.fr}
+                        className="w-16 h-16 object-cover rounded-lg"
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h3 className={`font-medium ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
+                        {language === 'ar' ? article.title.ar : article.title.fr}
+                        {article.number && (
+                          <span className="ml-2 text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                            {language === 'ar' ? `العدد ${article.number}` : `N° ${article.number}`}
+                          </span>
+                        )}
+                      </h3>
+                      <p className={`text-sm text-gray-500 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
+                        {article.date} - {language === 'ar' ? article.status.ar : article.status.fr}
+                      </p>
+                      <p className={`text-sm text-gray-600 mt-1 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
+                        {language === 'ar' ? article.excerpt.ar : article.excerpt.fr}
+                      </p>
+                    </div>
                   </div>
                   <div className="flex gap-2 ml-4">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(article)}>

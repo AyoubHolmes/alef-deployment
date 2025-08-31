@@ -46,6 +46,10 @@ const AdminActivitiesManager: React.FC = () => {
     endDate: '',
     locationAr: '',
     locationFr: '',
+    localisationAr: '',
+    localisationFr: '',
+    organizersAr: '',
+    organizersFr: '',
     artistAr: '',
     artistFr: '',
     datesAr: '',
@@ -113,6 +117,7 @@ const AdminActivitiesManager: React.FC = () => {
           titleAr: '', titleFr: '', descriptionAr: '', descriptionFr: '',
           category: 'art-exhibitions', type: 'exhibition', status: 'upcoming',
           startDate: '', endDate: '', locationAr: '', locationFr: '',
+          localisationAr: '', localisationFr: '', organizersAr: '', organizersFr: '',
           artistAr: '', artistFr: '', datesAr: '', datesFr: '',
           instructorAr: '', instructorFr: '', price: '', time: '', image: ''
         });
@@ -156,6 +161,10 @@ const AdminActivitiesManager: React.FC = () => {
         endDate: activity.endDate,
         locationAr: activity.location.ar,
         locationFr: activity.location.fr,
+        localisationAr: activity.localisation?.ar || '',
+        localisationFr: activity.localisation?.fr || '',
+        organizersAr: activity.organizers?.ar || '',
+        organizersFr: activity.organizers?.fr || '',
         artistAr: activity.artist?.ar || '',
         artistFr: activity.artist?.fr || '',
         datesAr: activity.dates?.ar || '',
@@ -172,6 +181,7 @@ const AdminActivitiesManager: React.FC = () => {
         titleAr: '', titleFr: '', descriptionAr: '', descriptionFr: '',
         category: 'art-exhibitions', type: 'exhibition', status: 'upcoming',
         startDate: '', endDate: '', locationAr: '', locationFr: '',
+        localisationAr: '', localisationFr: '', organizersAr: '', organizersFr: '',
         artistAr: '', artistFr: '', datesAr: '', datesFr: '',
         instructorAr: '', instructorFr: '', price: '', time: '', image: ''
       });
@@ -292,14 +302,98 @@ const AdminActivitiesManager: React.FC = () => {
                   </div>
                 </div>
 
-                <div>
-                  <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
-                    {language === 'ar' ? 'الوصف' : 'Description'}
-                  </Label>
-                  <Textarea 
-                    placeholder={language === 'ar' ? 'وصف النشاط' : 'Description de l\'activité'} 
-                    rows={3}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      {language === 'ar' ? 'المكان (عربي)' : 'Lieu (Arabe)'}
+                    </Label>
+                    <Input 
+                      placeholder={language === 'ar' ? 'المكان بالعربية' : 'Lieu en arabe'} 
+                      value={formData.locationAr}
+                      onChange={(e) => setFormData({...formData, locationAr: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      {language === 'ar' ? 'المكان (فرنسي)' : 'Lieu (Français)'}
+                    </Label>
+                    <Input 
+                      placeholder={language === 'ar' ? 'المكان بالفرنسية' : 'Lieu en français'} 
+                      value={formData.locationFr}
+                      onChange={(e) => setFormData({...formData, locationFr: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      {language === 'ar' ? 'التوطين (عربي)' : 'Localisation (Arabe)'}
+                    </Label>
+                    <Input 
+                      placeholder={language === 'ar' ? 'التوطين بالعربية' : 'Localisation en arabe'} 
+                      value={formData.localisationAr}
+                      onChange={(e) => setFormData({...formData, localisationAr: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      {language === 'ar' ? 'التوطين (فرنسي)' : 'Localisation (Français)'}
+                    </Label>
+                    <Input 
+                      placeholder={language === 'ar' ? 'التوطين بالفرنسية' : 'Localisation en français'} 
+                      value={formData.localisationFr}
+                      onChange={(e) => setFormData({...formData, localisationFr: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      {language === 'ar' ? 'المنظمون (عربي)' : 'Organisateurs (Arabe)'}
+                    </Label>
+                    <Input 
+                      placeholder={language === 'ar' ? 'المنظمون بالعربية' : 'Organisateurs en arabe'} 
+                      value={formData.organizersAr}
+                      onChange={(e) => setFormData({...formData, organizersAr: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      {language === 'ar' ? 'المنظمون (فرنسي)' : 'Organisateurs (Français)'}
+                    </Label>
+                    <Input 
+                      placeholder={language === 'ar' ? 'المنظمون بالفرنسية' : 'Organisateurs en français'} 
+                      value={formData.organizersFr}
+                      onChange={(e) => setFormData({...formData, organizersFr: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      {language === 'ar' ? 'الوصف (عربي)' : 'Description (Arabe)'}
+                    </Label>
+                    <Textarea 
+                      placeholder={language === 'ar' ? 'وصف النشاط بالعربية' : 'Description en arabe'} 
+                      rows={3}
+                      value={formData.descriptionAr}
+                      onChange={(e) => setFormData({...formData, descriptionAr: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      {language === 'ar' ? 'الوصف (فرنسي)' : 'Description (Français)'}
+                    </Label>
+                    <Textarea 
+                      placeholder={language === 'ar' ? 'وصف النشاط بالفرنسية' : 'Description en français'} 
+                      rows={3}
+                      value={formData.descriptionFr}
+                      onChange={(e) => setFormData({...formData, descriptionFr: e.target.value})}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex justify-end gap-2">
@@ -340,7 +434,10 @@ const AdminActivitiesManager: React.FC = () => {
                     {language === 'ar' ? 'التاريخ' : 'Date'}
                   </TableHead>
                   <TableHead className={language === 'ar' ? 'font-cairo text-right' : 'font-montserrat'}>
-                    {language === 'ar' ? 'المشاركون' : 'Participants'}
+                    {language === 'ar' ? 'التوطين' : 'Localisation'}
+                  </TableHead>
+                  <TableHead className={language === 'ar' ? 'font-cairo text-right' : 'font-montserrat'}>
+                    {language === 'ar' ? 'المنظمون' : 'Organisateurs'}
                   </TableHead>
                   <TableHead className={language === 'ar' ? 'font-cairo text-right' : 'font-montserrat'}>
                     {language === 'ar' ? 'الإجراءات' : 'Actions'}
@@ -380,8 +477,14 @@ const AdminActivitiesManager: React.FC = () => {
                     </TableCell>
                     <TableCell className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
                       <div className="flex items-center gap-1">
+                        <MapPin size={14} />
+                        {language === 'ar' ? activity.localisation?.ar : activity.localisation?.fr}
+                      </div>
+                    </TableCell>
+                    <TableCell className={language === 'ar' ? 'font-cairo' : 'font-montserrat'}>
+                      <div className="flex items-center gap-1">
                         <Users size={14} />
-                        {activity.participants || 0}
+                        {language === 'ar' ? activity.organizers?.ar : activity.organizers?.fr}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -398,7 +501,7 @@ const AdminActivitiesManager: React.FC = () => {
                 ))}
                 {activities.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="text-gray-500">
                         {language === 'ar' ? 'لا توجد أنشطة' : 'Aucune activité'}
                       </div>

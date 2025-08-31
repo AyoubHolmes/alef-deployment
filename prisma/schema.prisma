@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,77 +7,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Art Exhibitions Model
 model ArtExhibition {
-  id          Int      @id @default(autoincrement())
-  titleAr     String
-  titleFr     String
-  artistAr    String
-  artistFr    String
-  datesAr     String
-  datesFr     String
-  locationAr  String
-  locationFr  String
-  descriptionAr String @db.Text
-  descriptionFr String @db.Text
-  image       String?
-  status      ExhibitionStatus @default(UPCOMING)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             Int              @id @default(autoincrement())
+  titleAr        String
+  titleFr        String
+  artistAr       String
+  artistFr       String
+  datesAr        String
+  datesFr        String
+  locationAr     String
+  locationFr     String
+  descriptionAr  String
+  descriptionFr  String
+  image          String?
+  status         ExhibitionStatus @default(UPCOMING)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  localisationAr String           @default("")
+  localisationFr String           @default("")
+  organizersAr   String           @default("")
+  organizersFr   String           @default("")
 
   @@map("art_exhibitions")
 }
 
-enum ExhibitionStatus {
-  CURRENT
-  UPCOMING
-  PAST
-}
-
-// Articles Model (for education, literary-thought, visual-arts)
 model Article {
-  id              Int      @id @default(autoincrement())
-  titleAr         String
-  titleFr         String
-  authorAr        String
-  authorFr        String
-  translatorAr    String?
-  translatorFr    String?
-  date            DateTime
-  category        ArticleCategory
-  categoryLabelAr String
-  categoryLabelFr String
-  image           String
-  excerptAr       String   @db.Text
-  excerptFr       String   @db.Text
-  contentAr       String   @db.Text
-  contentFr       String   @db.Text
+  id               Int             @id @default(autoincrement())
+  titleAr          String
+  titleFr          String
+  authorAr         String
+  authorFr         String
+  translatorAr     String?
+  translatorFr     String?
+  date             DateTime
+  category         ArticleCategory
+  categoryLabelAr  String
+  categoryLabelFr  String
+  image            String
+  excerptAr        String
+  excerptFr        String
+  contentAr        String
+  contentFr        String
   additionalImages String[]
-  published       Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  published        Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
 
   @@map("articles")
 }
 
-enum ArticleCategory {
-  VISUAL_ARTS
-  LITERARY_THOUGHT
-  PROEMES
-  EDUCATION
-}
-
-// Educational Activities Models
 model WorkshopCategory {
-  id            Int       @id @default(autoincrement())
+  id            Int        @id @default(autoincrement())
   titleAr       String
   titleFr       String
   icon          String
-  descriptionAr String    @db.Text
-  descriptionFr String    @db.Text
+  descriptionAr String
+  descriptionFr String
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   workshops     Workshop[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
 
   @@map("workshop_categories")
 }
@@ -99,145 +84,127 @@ model Workshop {
   price          String
   status         WorkshopStatus   @default(OPEN)
   categoryId     Int
-  category       WorkshopCategory @relation(fields: [categoryId], references: [id])
   examplesAr     String[]
   examplesFr     String[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
+  localisationAr String           @default("")
+  localisationFr String           @default("")
+  organizersAr   String           @default("")
+  organizersFr   String           @default("")
+  category       WorkshopCategory @relation(fields: [categoryId], references: [id])
 
   @@map("workshops")
 }
 
-enum WorkshopStatus {
-  OPEN
-  ALMOST_FULL
-  FULL
-  COMPLETED
-}
-
-// Literary Gatherings Model
 model LiteraryEvent {
-  id            Int         @id @default(autoincrement())
-  titleAr       String
-  titleFr       String
-  dateAr        String
-  dateFr        String
-  locationAr    String
-  locationFr    String
-  descriptionAr String      @db.Text
-  descriptionFr String      @db.Text
-  image         String
-  status        EventStatus @default(UPCOMING)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  id             Int         @id @default(autoincrement())
+  titleAr        String
+  titleFr        String
+  dateAr         String
+  dateFr         String
+  locationAr     String
+  locationFr     String
+  descriptionAr  String
+  descriptionFr  String
+  image          String
+  status         EventStatus @default(UPCOMING)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  localisationAr String      @default("")
+  localisationFr String      @default("")
+  organizersAr   String      @default("")
+  organizersFr   String      @default("")
 
   @@map("literary_events")
 }
 
-enum EventStatus {
-  UPCOMING
-  PAST
-  CANCELLED
-}
-
-// Cultural Channel Models
 model CulturalChannelContent {
-  id                 Int      @id @default(autoincrement())
-  pageTitleAr        String
-  pageTitleFr        String
-  pageDescriptionAr  String   @db.Text
-  pageDescriptionFr  String   @db.Text
-  updatedAt          DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  pageTitleAr       String
+  pageTitleFr       String
+  pageDescriptionAr String
+  pageDescriptionFr String
+  updatedAt         DateTime @updatedAt
 
   @@map("cultural_channel_content")
 }
 
 model CulturalChannelVideo {
-  id           Int      @id @default(autoincrement())
-  youtubeId    String
-  titleAr      String
-  titleFr      String
-  descriptionAr String  @db.Text
-  descriptionFr String  @db.Text
-  thumbnail    String?
-  publishDate  DateTime
-  category     String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  youtubeId     String   @unique
+  titleAr       String
+  titleFr       String
+  descriptionAr String
+  descriptionFr String
+  thumbnail     String?
+  publishDate   DateTime
+  category      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  @@unique([youtubeId])
   @@map("cultural_channel_videos")
 }
 
-// Publications (Magazines) Models
-enum Magazine {
-  AMIS_DIONYSOS
-  ART_CHIV
-  BIAIS_ARTISTIQUES
-  BOOKS
-}
-
 model PublicationIssue {
-  id              Int      @id @default(autoincrement())
-  magazine        Magazine
-  number          Int
-  titleAr         String
-  titleFr         String
-  date            DateTime
-  image           String
-  featuredAr      String   @db.Text
-  featuredFr      String   @db.Text
-  contentAr       String   @db.Text
-  contentFr       String   @db.Text
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  magazine   Magazine
+  number     Int
+  titleAr    String
+  titleFr    String
+  date       DateTime
+  image      String
+  featuredAr String
+  featuredFr String
+  contentAr  String
+  contentFr  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([magazine, number])
   @@map("publication_issues")
 }
 
-// Partners Models
 model PartnersPageContent {
   id                Int      @id @default(autoincrement())
   pageTitleAr       String
   pageTitleFr       String
-  pageDescriptionAr String   @db.Text
-  pageDescriptionFr String   @db.Text
+  pageDescriptionAr String
+  pageDescriptionFr String
   updatedAt         DateTime @updatedAt
 
   @@map("partners_page_content")
 }
 
 model Partner {
-  id           Int      @id @default(autoincrement())
-  nameAr       String
-  nameFr       String
-  descriptionAr String  @db.Text
-  descriptionFr String  @db.Text
-  logo         String
-  website      String?
-  type         String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  nameAr        String
+  nameFr        String
+  descriptionAr String
+  descriptionFr String
+  logo          String
+  website       String?
+  type          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("partners")
 }
 
 model CollaborativeProgram {
-  id             Int      @id @default(autoincrement())
-  titleAr        String
-  titleFr        String
-  descriptionAr  String   @db.Text
-  descriptionFr  String   @db.Text
-  partnerNameAr  String
-  partnerNameFr  String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  titleAr       String
+  titleFr       String
+  descriptionAr String
+  descriptionFr String
+  partnerNameAr String
+  partnerNameFr String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("collaborative_programs")
 }
 
-// Books Model
 model Book {
   id            Int      @id @default(autoincrement())
   titleAr       String
@@ -248,13 +215,46 @@ model Book {
   pages         Int
   isbn          String   @unique
   image         String?
-  descriptionAr String   @db.Text
-  descriptionFr String   @db.Text
-  summaryAr     String   @db.Text
-  summaryFr     String   @db.Text
+  descriptionAr String
+  descriptionFr String
+  summaryAr     String
+  summaryFr     String
   downloadUrl   String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@map("books")
+}
+
+enum ExhibitionStatus {
+  CURRENT
+  UPCOMING
+  PAST
+}
+
+enum ArticleCategory {
+  VISUAL_ARTS
+  LITERARY_THOUGHT
+  PROEMES
+  EDUCATION
+}
+
+enum WorkshopStatus {
+  OPEN
+  ALMOST_FULL
+  FULL
+  COMPLETED
+}
+
+enum EventStatus {
+  UPCOMING
+  PAST
+  CANCELLED
+}
+
+enum Magazine {
+  AMIS_DIONYSOS
+  ART_CHIV
+  BIAIS_ARTISTIQUES
+  BOOKS
 }

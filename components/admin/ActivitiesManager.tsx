@@ -22,6 +22,8 @@ interface Activity {
   instructor?: { ar: string; fr: string }; // For educational activities
   dates: string;
   location: { ar: string; fr: string };
+  localisation: { ar: string; fr: string }; // Added localisation field
+  organizers: { ar: string; fr: string }; // Added organizers field
   image?: string;
   status: 'current' | 'upcoming' | 'past';
   price?: string; // For educational activities
@@ -49,6 +51,10 @@ const ActivitiesManager: React.FC = () => {
     dates: '',
     locationAr: '',
     locationFr: '',
+    localisationAr: '',
+    localisationFr: '',
+    organizersAr: '',
+    organizersFr: '',
     status: 'upcoming' as 'current' | 'upcoming' | 'past',
     price: '',
     image: ''
@@ -68,6 +74,8 @@ const ActivitiesManager: React.FC = () => {
     instructor: { ar: 'المدرب', fr: 'Instructeur' },
     dates: { ar: 'التواريخ', fr: 'Dates' },
     location: { ar: 'المكان', fr: 'Lieu' },
+    localisation: { ar: 'التوطين', fr: 'Localisation' },
+    organizers: { ar: 'المنظمون', fr: 'Organisateurs' },
     status: { ar: 'الحالة', fr: 'Statut' },
     current: { ar: 'حالي', fr: 'Actuel' },
     upcoming: { ar: 'قادم', fr: 'À venir' },
@@ -91,7 +99,7 @@ const ActivitiesManager: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (!formData.titleAr || !formData.titleFr || !formData.descriptionAr || !formData.descriptionFr || !formData.dates || !formData.locationAr || !formData.locationFr) {
+    if (!formData.titleAr || !formData.titleFr || !formData.descriptionAr || !formData.descriptionFr || !formData.dates || !formData.locationAr || !formData.locationFr || !formData.localisationAr || !formData.localisationFr || !formData.organizersAr || !formData.organizersFr) {
       toast.error(language === 'ar' ? 'يرجى ملء جميع الحقول المطلوبة' : 'Veuillez remplir tous les champs requis');
       return;
     }
@@ -103,6 +111,8 @@ const ActivitiesManager: React.FC = () => {
       description: { ar: formData.descriptionAr, fr: formData.descriptionFr },
       dates: formData.dates,
       location: { ar: formData.locationAr, fr: formData.locationFr },
+      localisation: { ar: formData.localisationAr, fr: formData.localisationFr },
+      organizers: { ar: formData.organizersAr, fr: formData.organizersFr },
       status: formData.status,
       image: formData.image,
       createdAt: editingActivity?.createdAt || new Date().toISOString()
@@ -150,6 +160,10 @@ const ActivitiesManager: React.FC = () => {
       dates: activity.dates,
       locationAr: activity.location.ar,
       locationFr: activity.location.fr,
+      localisationAr: activity.localisation.ar,
+      localisationFr: activity.localisation.fr,
+      organizersAr: activity.organizers.ar,
+      organizersFr: activity.organizers.fr,
       status: activity.status,
       price: activity.price || '',
       image: activity.image || ''
@@ -177,6 +191,10 @@ const ActivitiesManager: React.FC = () => {
       dates: '',
       locationAr: '',
       locationFr: '',
+      localisationAr: '',
+      localisationFr: '',
+      organizersAr: '',
+      organizersFr: '',
       status: 'upcoming',
       price: '',
       image: ''
@@ -377,6 +395,48 @@ const ActivitiesManager: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>{getLabel('localisation')} ({getLabel('arabic')})</Label>
+                    <Input
+                      value={formData.localisationAr}
+                      onChange={(e) => setFormData(prev => ({ ...prev, localisationAr: e.target.value }))}
+                      placeholder={getLabel('localisation')}
+                      className="font-cairo"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <Label>{getLabel('localisation')} ({getLabel('french')})</Label>
+                    <Input
+                      value={formData.localisationFr}
+                      onChange={(e) => setFormData(prev => ({ ...prev, localisationFr: e.target.value }))}
+                      placeholder={getLabel('localisation')}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>{getLabel('organizers')} ({getLabel('arabic')})</Label>
+                    <Input
+                      value={formData.organizersAr}
+                      onChange={(e) => setFormData(prev => ({ ...prev, organizersAr: e.target.value }))}
+                      placeholder={getLabel('organizers')}
+                      className="font-cairo"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <Label>{getLabel('organizers')} ({getLabel('french')})</Label>
+                    <Input
+                      value={formData.organizersFr}
+                      onChange={(e) => setFormData(prev => ({ ...prev, organizersFr: e.target.value }))}
+                      placeholder={getLabel('organizers')}
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <ImageUpload
                     label={getLabel('image')}
@@ -417,7 +477,9 @@ const ActivitiesManager: React.FC = () => {
                         </h3>
                         <p className="text-gray-600 mb-2">{activity.description[language]}</p>
                         <p className="text-sm text-gray-500 mb-1">📅 {activity.dates}</p>
-                        <p className="text-sm text-gray-500">📍 {activity.location[language]}</p>
+                        <p className="text-sm text-gray-500 mb-1">📍 {activity.location[language]}</p>
+                        <p className="text-sm text-gray-500 mb-1">🌍 {getLabel('localisation')}: {activity.localisation[language]}</p>
+                        <p className="text-sm text-gray-500 mb-1">👥 {getLabel('organizers')}: {activity.organizers[language]}</p>
                         {activity.artist && (
                           <p className="text-sm text-gray-500">🎨 {activity.artist[language]}</p>
                         )}
