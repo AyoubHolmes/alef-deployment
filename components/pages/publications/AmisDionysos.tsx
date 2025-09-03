@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download, FileText, Eye, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { toast } from 'sonner';
 
 const AmisDionysos = () => {
   const { language } = useLanguage();
@@ -32,6 +33,8 @@ const AmisDionysos = () => {
             image: i.image,
             featured: language === 'ar' ? i.featuredAr : i.featuredFr,
             content: language === 'ar' ? i.contentAr : i.contentFr,
+            documentUrlAr: i.documentUrlAr,
+            documentUrlFr: i.documentUrlFr,
           }));
           setIssues(normalized);
         } else {
@@ -46,8 +49,46 @@ const AmisDionysos = () => {
     loadIssues();
   }, [language]);
 
-  const handleDownload = (issueId: number) => {
-    console.log(`Downloading magazine issue ${issueId}`);
+  const handleDownload = (issue: any) => {
+    const documentUrl = language === 'ar' ? issue.documentUrlAr : issue.documentUrlFr;
+    
+    if (!documentUrl) {
+      const message = language === 'ar' 
+        ? 'المستند غير متوفر بهذه اللغة' 
+        : 'Document non disponible dans cette langue';
+      toast.error(message);
+      return;
+    }
+
+    try {
+      // Show loading toast
+      const loadingMessage = language === 'ar' ? 'جاري تحميل المستند...' : 'Téléchargement en cours...';
+      toast.loading(loadingMessage);
+
+      // Create a temporary link element and trigger download
+      const link = document.createElement('a');
+      link.href = documentUrl;
+      link.download = `amis-dionysos-${issue.number}-${language}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Show success toast
+      setTimeout(() => {
+        const successMessage = language === 'ar' 
+          ? 'تم بدء تحميل المستند' 
+          : 'Téléchargement du document commencé';
+        toast.dismiss();
+        toast.success(successMessage);
+      }, 1000);
+    } catch (error) {
+      const errorMessage = language === 'ar' 
+        ? 'خطأ في تحميل المستند' 
+        : 'Erreur lors du téléchargement';
+      toast.dismiss();
+      toast.error(errorMessage);
+    }
   };
 
   const openIssueDetails = (issue: any) => {
@@ -111,7 +152,29 @@ const AmisDionysos = () => {
                   {issue.title}
                 </h4>
                 <p className="text-gray-600 text-xs mb-2">{issue.date}</p>
-                <p className="text-gray-700 text-sm mb-4 line-clamp-2">{issue.featured}</p>
+                <p className="text-gray-700 text-sm mb-2 line-clamp-2">{issue.featured}</p>
+                
+                {/* Document availability indicators */}
+                <div className="flex gap-2 mb-3">
+                  {issue.documentUrlAr && (
+                    <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                      <FileText size={12} />
+                      {language === 'ar' ? 'عربي' : 'AR'}
+                    </span>
+                  )}
+                  {issue.documentUrlFr && (
+                    <span className="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <FileText size={12} />
+                      {language === 'ar' ? 'فرنسي' : 'FR'}
+                    </span>
+                  )}
+                  {!issue.documentUrlAr && !issue.documentUrlFr && (
+                    <span className="text-xs text-gray-500">
+                      {language === 'ar' ? 'لا توجد مستندات' : 'Aucun document'}
+                    </span>
+                  )}
+                </div>
+                
                 <div className="flex gap-2">
                   <Button 
                     size="sm" 
@@ -124,8 +187,14 @@ const AmisDionysos = () => {
                   </Button>
                   <Button 
                     size="sm" 
-                    className="bg-[#074D8C] hover:bg-[#05396b]"
-                    onClick={() => handleDownload(issue.id)}
+                    className="bg-[#074D8C] hover:bg-[#05396b] disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleDownload(issue)}
+                    disabled={!(language === 'ar' ? issue.documentUrlAr : issue.documentUrlFr)}
+                    title={
+                      (language === 'ar' ? issue.documentUrlAr : issue.documentUrlFr)
+                        ? (language === 'ar' ? 'تحميل المستند' : 'Télécharger le document')
+                        : (language === 'ar' ? 'المستند غير متوفر بهذه اللغة' : 'Document non disponible dans cette langue')
+                    }
                   >
                     <Download className="h-3 w-3" />
                   </Button>
@@ -180,11 +249,15 @@ const AmisDionysos = () => {
                 
                 <div className="flex gap-3">
                   <Button 
-                    className="flex-1 bg-[#074D8C] hover:bg-[#05396b]"
-                    onClick={() => handleDownload(selectedIssue.id)}
+                    className="flex-1 bg-[#074D8C] hover:bg-[#05396b] disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleDownload(selectedIssue)}
+                    disabled={!(language === 'ar' ? selectedIssue.documentUrlAr : selectedIssue.documentUrlFr)}
                   >
                     <Download className="mr-2 h-4 w-4" />
-                    {language === 'ar' ? 'تحميل العدد' : 'Télécharger le numéro'}
+                    {(language === 'ar' ? selectedIssue.documentUrlAr : selectedIssue.documentUrlFr)
+                      ? (language === 'ar' ? 'تحميل العدد' : 'Télécharger le numéro')
+                      : (language === 'ar' ? 'غير متوفر بهذه اللغة' : 'Non disponible dans cette langue')
+                    }
                   </Button>
                   <Button variant="outline" onClick={closeIssueDetails}>
                     {language === 'ar' ? 'إغلاق' : 'Fermer'}

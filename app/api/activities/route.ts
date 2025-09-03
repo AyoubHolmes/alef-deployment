@@ -36,7 +36,8 @@ export async function GET() {
         organizers: { ar: item.organizersAr, fr: item.organizersFr },
         participants: 0,
         artist: { ar: item.artistAr, fr: item.artistFr },
-        dates: { ar: item.datesAr, fr: item.datesFr }
+        dates: { ar: item.datesAr, fr: item.datesFr },
+        image: item.image
       })),
       ...workshops.map(item => ({
         id: `workshop-${item.id}`,
@@ -53,7 +54,8 @@ export async function GET() {
         participants: 0,
         instructor: { ar: item.instructorAr, fr: item.instructorFr },
         price: item.price,
-        time: item.time
+        time: item.time,
+        image: item.image
       })),
       ...literaryEvents.map(item => ({
         id: `literary-${item.id}`,
@@ -68,7 +70,8 @@ export async function GET() {
         localisation: { ar: item.localisationAr, fr: item.localisationFr },
         organizers: { ar: item.organizersAr, fr: item.organizersFr },
         participants: 0,
-        dates: { ar: item.dateAr, fr: item.dateFr }
+        dates: { ar: item.dateAr, fr: item.dateFr },
+        image: item.image
       }))
     ];
 
@@ -136,7 +139,8 @@ export async function POST(request: NextRequest) {
             status: activityData.status?.toUpperCase() || 'OPEN',
             categoryId: activityData.categoryId,
             examplesAr: activityData.examplesAr || [],
-            examplesFr: activityData.examplesFr || []
+            examplesFr: activityData.examplesFr || [],
+            image: activityData.image || null
           }
         });
         break;

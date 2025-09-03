@@ -86,6 +86,7 @@ model Workshop {
   categoryId     Int
   examplesAr     String[]
   examplesFr     String[]
+  image          String?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   localisationAr String           @default("")
@@ -147,19 +148,21 @@ model CulturalChannelVideo {
 }
 
 model PublicationIssue {
-  id         Int      @id @default(autoincrement())
-  magazine   Magazine
-  number     Int
-  titleAr    String
-  titleFr    String
-  date       DateTime
-  image      String
-  featuredAr String
-  featuredFr String
-  contentAr  String
-  contentFr  String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  magazine      Magazine
+  number        Int
+  titleAr       String
+  titleFr       String
+  date          DateTime
+  image         String
+  featuredAr    String
+  featuredFr    String
+  contentAr     String
+  contentFr     String
+  documentUrlAr String?
+  documentUrlFr String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([magazine, number])
   @@map("publication_issues")

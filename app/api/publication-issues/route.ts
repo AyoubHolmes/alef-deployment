@@ -48,7 +48,9 @@ export async function POST(request: NextRequest) {
         featuredAr: body.featuredAr,
         featuredFr: body.featuredFr,
         contentAr: body.contentAr,
-        contentFr: body.contentFr
+        contentFr: body.contentFr,
+        documentUrlAr: body.documentUrlAr || null,
+        documentUrlFr: body.documentUrlFr || null
       }
     });
 

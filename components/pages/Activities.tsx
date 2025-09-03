@@ -8,7 +8,8 @@ import { useLanguage } from '@/contexts/language';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, User, DollarSign } from 'lucide-react';
+import { Calendar, MapPin, User, DollarSign, Eye } from 'lucide-react';
+import EventModal from '@/components/EventModal';
 // NOTE: This page previously used mock data from `allEventsData`.
 // It now fetches from real APIs and normalizes the results to the expected shape.
 
@@ -21,6 +22,7 @@ type ActivityItem = {
   id: number | string;
   title: LocalizedText;
   description: LocalizedText;
+  fullDescription?: LocalizedText;
   // Some sources have a single date string; we store start/end as strings for display
   startDate: string;
   endDate: string;
@@ -31,6 +33,9 @@ type ActivityItem = {
   artist?: LocalizedText;
   instructor?: LocalizedText;
   price?: LocalizedText;
+  organizers?: LocalizedText;
+  localisation?: LocalizedText;
+  dates?: LocalizedText;
 };
 
 const Activities = () => {
@@ -39,6 +44,21 @@ const Activities = () => {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
+
+  // Helper function to get category labels
+  const getCategoryLabel = (category: string): LocalizedText => {
+    switch (category) {
+      case 'art-exhibitions':
+        return { ar: 'فنون بصرية', fr: 'Arts Visuels' };
+      case 'educational-activities':
+        return { ar: 'تربية', fr: 'Éducation' };
+      case 'literary-gatherings':
+        return { ar: 'أدب وفكر', fr: 'Pensée Littéraire' };
+      default:
+        return { ar: category, fr: category };
+    }
+  };
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -80,72 +100,37 @@ const Activities = () => {
       setIsLoading(true);
       setErrorMessage(null);
       try {
-        // Fetch in parallel
-        const [exhibitionsRes, gatheringsRes, workshopsRes] = await Promise.all([
-          fetch('/api/art-exhibitions', { cache: 'no-store' }),
-          fetch('/api/literary-gatherings', { cache: 'no-store' }),
-          fetch('/api/educational-activities?type=workshops', { cache: 'no-store' })
-        ]);
+        // Fetch from the unified activities API
+        const activitiesRes = await fetch('/api/activities', { cache: 'no-store' });
+        const activitiesJson = await activitiesRes.json();
 
-        const [exhibitionsJson, gatheringsJson, workshopsJson] = await Promise.all([
-          exhibitionsRes.json(),
-          gatheringsRes.json(),
-          workshopsRes.json()
-        ]);
+        if (activitiesJson?.success && Array.isArray(activitiesJson.data)) {
+          const normalizedActivities: ActivityItem[] = activitiesJson.data.map((activity: any) => ({
+            id: activity.id,
+            title: activity.title,
+            description: activity.description,
+            fullDescription: activity.description, // Use description as fullDescription
+            startDate: activity.dates?.ar || activity.startDate || '',
+            endDate: activity.dates?.fr || activity.endDate || '',
+            location: activity.location,
+            image: activity.image || '',
+            category: getCategoryLabel(activity.category),
+            type: activity.type,
+            artist: activity.artist,
+            instructor: activity.instructor,
+            price: activity.price ? { ar: String(activity.price), fr: String(activity.price) } : undefined,
+            organizers: activity.organizers,
+            localisation: activity.localisation,
+            dates: activity.dates
+          }));
 
-        const normalizedExhibitions: ActivityItem[] = Array.isArray(exhibitionsJson?.data)
-          ? exhibitionsJson.data.map((ex: any) => ({
-              id: ex.id,
-              title: { ar: ex.titleAr ?? '', fr: ex.titleFr ?? '' },
-              description: { ar: ex.descriptionAr ?? '', fr: ex.descriptionFr ?? '' },
-              startDate: '',
-              endDate: '',
-              location: { ar: ex.locationAr ?? '', fr: ex.locationFr ?? '' },
-              image: ex.image ?? '',
-              category: { ar: 'فنون بصرية', fr: 'Arts Visuels' },
-              type: 'exhibition',
-              artist: ex.artistAr || ex.artistFr ? { ar: ex.artistAr ?? '', fr: ex.artistFr ?? '' } : undefined
-            }))
-          : [];
-
-        const normalizedGatherings: ActivityItem[] = Array.isArray(gatheringsJson?.data)
-          ? gatheringsJson.data.map((ev: any) => ({
-              id: ev.id,
-              title: { ar: ev.titleAr ?? '', fr: ev.titleFr ?? '' },
-              description: { ar: ev.descriptionAr ?? '', fr: ev.descriptionFr ?? '' },
-              startDate: ev.dateFr ?? '',
-              endDate: ev.dateFr ?? '',
-              location: { ar: ev.locationAr ?? '', fr: ev.locationFr ?? '' },
-              image: ev.image ?? '',
-              category: { ar: 'أدب وفكر', fr: 'Pensée Littéraire' },
-              type: 'event'
-            }))
-          : [];
-
-        const normalizedWorkshops: ActivityItem[] = Array.isArray(workshopsJson?.data)
-          ? workshopsJson.data.map((ws: any) => ({
-              id: ws.id,
-              title: { ar: ws.titleAr ?? '', fr: ws.titleFr ?? '' },
-              description: { ar: ws.examplesAr?.join('، ') ?? '', fr: ws.examplesFr?.join(', ') ?? '' },
-              startDate: ws.dateFr ?? '',
-              endDate: ws.dateFr ?? '',
-              location: { ar: ws.locationAr ?? '', fr: ws.locationFr ?? '' },
-              image: '',
-              category: { ar: 'تربية', fr: 'Éducation' },
-              type: 'workshop',
-              instructor: ws.instructorAr || ws.instructorFr ? { ar: ws.instructorAr ?? '', fr: ws.instructorFr ?? '' } : undefined,
-              price: ws.price ? { ar: String(ws.price), fr: String(ws.price) } : undefined
-            }))
-          : [];
-
-        const combined: ActivityItem[] = [
-          ...normalizedExhibitions,
-          ...normalizedGatherings,
-          ...normalizedWorkshops
-        ];
-
-        if (!isCancelled) {
-          setActivities(combined);
+          if (!isCancelled) {
+            setActivities(normalizedActivities);
+          }
+        } else {
+          if (!isCancelled) {
+            setActivities([]);
+          }
         }
       } catch (error) {
         console.error('Failed to load activities', error);
@@ -285,6 +270,17 @@ const Activities = () => {
                     </div>
                   )}
                 </div>
+
+                {/* Details Button */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <Button 
+                    className={`w-full bg-[#074D8C] hover:bg-[#05396b] text-white ${language === 'ar' ? 'font-cairo' : 'font-montserrat'} transition-colors duration-200`}
+                    onClick={() => setSelectedActivity(activity)}
+                  >
+                    <Eye className={`w-4 h-4 ${language === 'ar' ? 'ml-2' : 'mr-2'}`} />
+                    {language === 'ar' ? 'عرض التفاصيل' : 'Voir les détails'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -301,6 +297,13 @@ const Activities = () => {
           </div>
         )}
       </div>
+
+      {/* Activity Details Modal */}
+      <EventModal 
+        event={selectedActivity}
+        isOpen={!!selectedActivity}
+        onClose={() => setSelectedActivity(null)}
+      />
     </MainLayout>
   );
 };
