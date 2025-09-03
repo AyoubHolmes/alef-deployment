@@ -80,9 +80,14 @@ const EventModal: React.FC<EventModalProps> = ({ event, isOpen, onClose }) => {
                       {language === 'ar' ? 'التاريخ' : 'Date'}
                     </p>
                     <p className={`text-sm text-gray-600 ${isRTL ? 'font-cairo text-right' : 'text-left'}`}>
-                      {formatDate(event.startDate)}
-                      {event.endDate !== event.startDate && (
-                        <span> - {formatDate(event.endDate)}</span>
+                      {/* Use dates field if available, otherwise fallback to startDate/endDate */}
+                      {event.dates ? event.dates[language] : (
+                        <>
+                          {formatDate(event.startDate)}
+                          {event.endDate !== event.startDate && (
+                            <span> - {formatDate(event.endDate)}</span>
+                          )}
+                        </>
                       )}
                     </p>
                   </div>
@@ -98,6 +103,12 @@ const EventModal: React.FC<EventModalProps> = ({ event, isOpen, onClose }) => {
                     <p className={`text-sm text-gray-600 ${isRTL ? 'font-cairo text-right' : 'text-left'}`}>
                       {event.location[language]}
                     </p>
+                    {/* Additional localisation info if available */}
+                    {event.localisation && event.localisation[language] && (
+                      <p className={`text-xs text-gray-500 mt-1 ${isRTL ? 'font-cairo text-right' : 'text-left'}`}>
+                        {event.localisation[language]}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -194,6 +205,36 @@ const EventModal: React.FC<EventModalProps> = ({ event, isOpen, onClose }) => {
                       </p>
                       <p className={`text-sm text-gray-600 ${isRTL ? 'font-cairo text-right' : 'text-left'}`}>
                         {event.duration[language]}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Organizers */}
+                {event.organizers && event.organizers[language] && (
+                  <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <Users className="w-5 h-5 text-gray-500 mt-1 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className={`font-medium text-sm mb-1 ${isRTL ? 'font-cairo text-right' : 'text-left'}`}>
+                        {language === 'ar' ? 'المنظمون' : 'Organisateurs'}
+                      </p>
+                      <p className={`text-sm text-gray-600 ${isRTL ? 'font-cairo text-right' : 'text-left'}`}>
+                        {event.organizers[language]}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Time (for workshops) */}
+                {event.time && (
+                  <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
+                    <Calendar className="w-5 h-5 text-gray-500 mt-1 flex-shrink-0" />
+                    <div className="flex-1">
+                      <p className={`font-medium text-sm mb-1 ${isRTL ? 'font-cairo text-right' : 'text-left'}`}>
+                        {language === 'ar' ? 'الوقت' : 'Heure'}
+                      </p>
+                      <p className={`text-sm text-gray-600 ${isRTL ? 'font-cairo text-right' : 'text-left'}`}>
+                        {event.time}
                       </p>
                     </div>
                   </div>

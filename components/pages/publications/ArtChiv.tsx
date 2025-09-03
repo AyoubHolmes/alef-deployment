@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download, FileText, Eye, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { toast } from 'sonner';
 
 const ArtChiv = () => {
   const { language } = useLanguage();
@@ -28,10 +29,18 @@ const ArtChiv = () => {
             id: i.id,
             number: i.number,
             title: language === 'ar' ? i.titleAr : i.titleFr,
+            titleAr: i.titleAr,
+            titleFr: i.titleFr,
             date: i.date,
             image: i.image,
             featured: language === 'ar' ? i.featuredAr : i.featuredFr,
+            featuredAr: i.featuredAr,
+            featuredFr: i.featuredFr,
             content: language === 'ar' ? i.contentAr : i.contentFr,
+            contentAr: i.contentAr,
+            contentFr: i.contentFr,
+            documentUrlAr: i.documentUrlAr,
+            documentUrlFr: i.documentUrlFr,
           }));
           setIssues(normalized);
         } else {
@@ -46,8 +55,43 @@ const ArtChiv = () => {
     loadIssues();
   }, [language]);
 
-  const handleDownload = (issueId: number) => {
-    console.log(`Downloading magazine issue ${issueId}`);
+  const handleDownload = (issue: any) => {
+    const documentUrl = language === 'ar' ? issue.documentUrlAr : issue.documentUrlFr;
+
+    if (!documentUrl) {
+      const message = language === 'ar'
+        ? 'المستند غير متوفر بهذه اللغة'
+        : 'Document non disponible dans cette langue';
+      toast.error(message);
+      return;
+    }
+
+    try {
+      const loadingMessage = language === 'ar' ? 'جاري تحميل المستند...' : 'Téléchargement en cours...';
+      toast.loading(loadingMessage);
+
+      const link = document.createElement('a');
+      link.href = documentUrl;
+      link.download = `art-chiv-${issue.number}-${language}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setTimeout(() => {
+        const successMessage = language === 'ar'
+          ? 'تم بدء تحميل المستند'
+          : 'Téléchargement du document commencé';
+        toast.dismiss();
+        toast.success(successMessage);
+      }, 1000);
+    } catch (error) {
+      const errorMessage = language === 'ar'
+        ? 'خطأ في تحميل المستند'
+        : 'Erreur lors du téléchargement';
+      toast.dismiss();
+      toast.error(errorMessage);
+    }
   };
 
   const openIssueDetails = (issue: any) => {
@@ -111,12 +155,39 @@ const ArtChiv = () => {
                   {issue.title}
                 </h4>
                 <p className="text-gray-600 text-xs mb-2">{issue.date}</p>
+                
+                <div className="flex gap-2 mb-3">
+                  {issue.documentUrlAr && (
+                    <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                      <FileText size={12} />
+                      {language === 'ar' ? 'عربي' : 'AR'}
+                    </span>
+                  )}
+                  {issue.documentUrlFr && (
+                    <span className="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      <FileText size={12} />
+                      {language === 'ar' ? 'فرنسي' : 'FR'}
+                    </span>
+                  )}
+                  {!issue.documentUrlAr && !issue.documentUrlFr && (
+                    <span className="text-xs text-gray-500">
+                      {language === 'ar' ? 'لا توجد مستندات' : 'Aucun document'}
+                    </span>
+                  )}
+                </div>
+                
                 <p className="text-gray-700 text-sm mb-4 line-clamp-2 flex-grow">{issue.featured}</p>
                 <div className="flex gap-2 mt-auto">
                   <Button 
                     size="sm" 
                     className="bg-[#F7A520] hover:bg-[#e6941c]"
-                    onClick={() => handleDownload(issue.id)}
+                    onClick={() => handleDownload(issue)}
+                    disabled={!(language === 'ar' ? issue.documentUrlAr : issue.documentUrlFr)}
+                    title={
+                      (language === 'ar' ? issue.documentUrlAr : issue.documentUrlFr)
+                        ? (language === 'ar' ? 'تحميل المستند' : 'Télécharger le document')
+                        : (language === 'ar' ? 'المستند غير متوفر بهذه اللغة' : 'Document non disponible dans cette langue')
+                    }
                   >
                     <Download className="h-3 w-3" />
                   </Button>
@@ -137,13 +208,21 @@ const ArtChiv = () => {
 
         {/* Issue Details Modal */}
         {selectedIssue && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6">
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                closeIssueDetails();
+              }
+            }}
+          >
+            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+                 onClick={(e) => e.stopPropagation()}>
+              <div className={`p-6 ${language === 'ar' ? 'text-right' : 'text-left'}`} dir={language === 'ar' ? 'rtl' : 'ltr'}>
                 <div className="flex justify-between items-start mb-4">
                   <div>
-                    <h2 className={`text-2xl font-bold mb-2 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
-                      {selectedIssue?.title}
+                    <h2 className={`text-2xl font-bold mb-2 ${language === 'ar' ? 'font-cairo text-right' : 'font-montserrat text-left'}`}>
+                      {language === 'ar' ? selectedIssue?.titleAr : selectedIssue?.titleFr}
                     </h2>
                     <div className="flex items-center text-gray-600">
                       <span className="font-semibold">
@@ -169,22 +248,26 @@ const ArtChiv = () => {
                     </AspectRatio>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-3">
+                    <h3 className={`font-semibold text-lg mb-3 ${language === 'ar' ? 'font-cairo text-right' : 'font-montserrat text-left'}`}>
                       {language === 'ar' ? 'في هذا العدد' : 'Dans ce numéro'}
                     </h3>
-                    <p className="text-gray-700 leading-relaxed">
-                      {selectedIssue?.content}
+                    <p className={`text-gray-700 leading-relaxed ${language === 'ar' ? 'font-cairo text-right' : 'font-montserrat text-left'}`}>
+                      {language === 'ar' ? selectedIssue?.contentAr : selectedIssue?.contentFr}
                     </p>
                   </div>
                 </div>
                 
                 <div className="flex gap-3">
                   <Button 
-                    className="flex-1 bg-[#F7A520] hover:bg-[#e6941c]"
-                    onClick={() => handleDownload(selectedIssue?.id)}
+                    className="flex-1 bg-[#F7A520] hover:bg-[#e6941c] disabled:opacity-50 disabled:cursor-not-allowed"
+                    onClick={() => handleDownload(selectedIssue)}
+                    disabled={!(language === 'ar' ? selectedIssue?.documentUrlAr : selectedIssue?.documentUrlFr)}
                   >
                     <Download className="mr-2 h-4 w-4" />
-                    {language === 'ar' ? 'تحميل العدد' : 'Télécharger le numéro'}
+                    {(language === 'ar' ? selectedIssue?.documentUrlAr : selectedIssue?.documentUrlFr)
+                      ? (language === 'ar' ? 'تحميل العدد' : 'Télécharger le numéro')
+                      : (language === 'ar' ? 'غير متوفر بهذه اللغة' : 'Non disponible dans cette langue')
+                    }
                   </Button>
                   <Button variant="outline" onClick={closeIssueDetails}>
                     {language === 'ar' ? 'إغلاق' : 'Fermer'}

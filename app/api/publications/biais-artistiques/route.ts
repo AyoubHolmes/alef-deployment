@@ -24,6 +24,8 @@ export async function GET() {
         featuredFr: i.featuredFr,
         contentAr: i.contentAr,
         contentFr: i.contentFr,
+        documentUrlAr: i.documentUrlAr,
+        documentUrlFr: i.documentUrlFr,
       }))
     });
   } catch (error) {

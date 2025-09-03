@@ -36,6 +36,7 @@ type ActivityItem = {
   organizers?: LocalizedText;
   localisation?: LocalizedText;
   dates?: LocalizedText;
+  time?: string; // For workshops
 };
 
 const Activities = () => {
@@ -110,8 +111,8 @@ const Activities = () => {
             title: activity.title,
             description: activity.description,
             fullDescription: activity.description, // Use description as fullDescription
-            startDate: activity.dates?.ar || activity.startDate || '',
-            endDate: activity.dates?.fr || activity.endDate || '',
+            startDate: activity.startDate || '',
+            endDate: activity.endDate || '',
             location: activity.location,
             image: activity.image || '',
             category: getCategoryLabel(activity.category),
@@ -121,7 +122,8 @@ const Activities = () => {
             price: activity.price ? { ar: String(activity.price), fr: String(activity.price) } : undefined,
             organizers: activity.organizers,
             localisation: activity.localisation,
-            dates: activity.dates
+            dates: activity.dates,
+            time: activity.time
           }));
 
           if (!isCancelled) {

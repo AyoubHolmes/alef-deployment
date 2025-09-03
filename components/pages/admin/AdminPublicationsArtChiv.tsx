@@ -9,9 +9,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import ImageUpload from '@/components/ui/ImageUpload';
+import DocumentUpload from '@/components/ui/DocumentUpload';
 
 interface ArtChivArticle {
   id: number;
@@ -22,6 +23,8 @@ interface ArtChivArticle {
   excerpt: { ar: string; fr: string };
   number?: number;
   image?: string;
+  documentUrlAr?: string;
+  documentUrlFr?: string;
 }
 
 const AdminPublicationsArtChiv: React.FC = () => {
@@ -43,7 +46,9 @@ const AdminPublicationsArtChiv: React.FC = () => {
           content: { ar: issue.contentAr, fr: issue.contentFr },
           excerpt: { ar: issue.featuredAr, fr: issue.featuredFr },
           number: issue.number,
-          image: issue.image
+          image: issue.image,
+          documentUrlAr: issue.documentUrlAr,
+          documentUrlFr: issue.documentUrlFr
         }));
         setArticles(transformedArticles);
       } else {
@@ -70,7 +75,9 @@ const AdminPublicationsArtChiv: React.FC = () => {
     content: { ar: '', fr: '' },
     excerpt: { ar: '', fr: '' },
     number: 1,
-    image: ''
+    image: '',
+    documentUrlAr: '',
+    documentUrlFr: ''
   });
 
   const resetForm = () => {
@@ -81,7 +88,9 @@ const AdminPublicationsArtChiv: React.FC = () => {
       content: { ar: '', fr: '' },
       excerpt: { ar: '', fr: '' },
       number: articles.length + 1,
-      image: ''
+      image: '',
+      documentUrlAr: '',
+      documentUrlFr: ''
     });
     setEditingArticle(null);
   };
@@ -100,7 +109,9 @@ const AdminPublicationsArtChiv: React.FC = () => {
       content: article.content,
       excerpt: article.excerpt,
       number: article.number || 1,
-      image: article.image || ''
+      image: article.image || '',
+      documentUrlAr: article.documentUrlAr || '',
+      documentUrlFr: article.documentUrlFr || ''
     });
     setIsDialogOpen(true);
   };
@@ -145,7 +156,9 @@ const AdminPublicationsArtChiv: React.FC = () => {
         featuredAr: formData.excerpt.ar,
         featuredFr: formData.excerpt.fr,
         contentAr: formData.content.ar,
-        contentFr: formData.content.fr
+        contentFr: formData.content.fr,
+        documentUrlAr: formData.documentUrlAr || null,
+        documentUrlFr: formData.documentUrlFr || null
       };
 
       let response;
@@ -311,6 +324,19 @@ const AdminPublicationsArtChiv: React.FC = () => {
                   currentImage={formData.image}
                 />
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DocumentUpload
+                    label={language === 'ar' ? 'رفع مستند عربي (PDF، DOC، DOCX)' : 'Document Arabe (PDF, DOC, DOCX)'}
+                    onDocumentUpload={(documentUrl) => setFormData({...formData, documentUrlAr: documentUrl})}
+                    currentDocument={formData.documentUrlAr}
+                  />
+                  <DocumentUpload
+                    label={language === 'ar' ? 'رفع مستند فرنسي (PDF، DOC، DOCX)' : 'Document Français (PDF, DOC, DOCX)'}
+                    onDocumentUpload={(documentUrl) => setFormData({...formData, documentUrlFr: documentUrl})}
+                    currentDocument={formData.documentUrlFr}
+                  />
+                </div>
+
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                     <X size={16} className="mr-2" />
@@ -359,6 +385,22 @@ const AdminPublicationsArtChiv: React.FC = () => {
                       <p className={`text-sm text-gray-600 mt-1 ${language === 'ar' ? 'font-cairo' : 'font-montserrat'}`}>
                         {language === 'ar' ? article.excerpt.ar : article.excerpt.fr}
                       </p>
+                      {(article.documentUrlAr || article.documentUrlFr) && (
+                        <div className="flex gap-2 mt-2">
+                          {article.documentUrlAr && (
+                            <span className="inline-flex items-center gap-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                              <FileText size={12} />
+                              {language === 'ar' ? 'مستند عربي' : 'Doc AR'}
+                            </span>
+                          )}
+                          {article.documentUrlFr && (
+                            <span className="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                              <FileText size={12} />
+                              {language === 'ar' ? 'مستند فرنسي' : 'Doc FR'}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2 ml-4">

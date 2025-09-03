@@ -9,8 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, FileText } from 'lucide-react';
 import { toast } from 'sonner';
+import DocumentUpload from '@/components/ui/DocumentUpload';
 
 interface Book {
   id: number;
@@ -23,6 +24,8 @@ interface Book {
   description: { ar: string; fr: string };
   summary: { ar: string; fr: string };
   downloadUrl?: string;
+  documentUrlAr?: string;
+  documentUrlFr?: string;
 }
 
 const AdminPublicationsBooks: React.FC = () => {
