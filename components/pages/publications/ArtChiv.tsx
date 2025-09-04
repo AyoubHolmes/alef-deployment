@@ -180,7 +180,16 @@ const ArtChiv = () => {
                 <div className="flex gap-2 mt-auto">
                   <Button 
                     size="sm" 
-                    className="bg-[#F7A520] hover:bg-[#e6941c]"
+                    variant="outline"
+                    onClick={() => openIssueDetails(issue)}
+                    className="flex-1 text-xs border-2 border-blue-500 text-blue-600 hover:bg-blue-50 font-medium"
+                  >
+                    <Eye className={`h-3 w-3 ${language === 'ar' ? 'ml-1' : 'mr-1'}`} />
+                    {language === 'ar' ? 'التفاصيل' : 'Détails'}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    className="bg-[#F7A520] hover:bg-[#e6941c] disabled:opacity-50 disabled:cursor-not-allowed text-white"
                     onClick={() => handleDownload(issue)}
                     disabled={!(language === 'ar' ? issue.documentUrlAr : issue.documentUrlFr)}
                     title={
@@ -190,15 +199,6 @@ const ArtChiv = () => {
                     }
                   >
                     <Download className="h-3 w-3" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => openIssueDetails(issue)}
-                    className="flex-1 text-xs"
-                  >
-                    <Eye className="mr-1 h-3 w-3" />
-                    {language === 'ar' ? 'التفاصيل' : 'Détails'}
                   </Button>
                 </div>
               </div>
