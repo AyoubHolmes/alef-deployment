@@ -20,6 +20,8 @@ const BiaisArtistiques = () => {
     image: string;
     featured: string;
     content: string;
+    documentUrlAr: string;
+    documentUrlFr: string;
   } | null;
 
   const [selectedIssue, setSelectedIssue] = useState<Issue>(null);
